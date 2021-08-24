@@ -1,7 +1,7 @@
 {
-  "name": "mcproxy",
+  "name": "mineshark",
   "version": "1.0.0",
-  "description": "A TCP proxy for minecraft",
+  "description": "A packet sniffing proxy that sits between a Minecraft client and server.",
   "main": "dist/proxy.js",
   "author": "Sean Bailey <hello@seanbailey.dev>",
   "scripts": {
