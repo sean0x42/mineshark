@@ -1,0 +1,23 @@
+{
+  "name": "mcproxy",
+  "version": "1.0.0",
+  "description": "A TCP proxy for minecraft",
+  "main": "dist/proxy.js",
+  "author": "Sean Bailey <hello@seanbailey.dev>",
+  "scripts": {
+    "start": "ts-node src/proxy.ts",
+    "dev": "ts-node-dev src/proxy.ts",
+    "fmt": "prettier --write .",
+    "test": "jest"
+  },
+  "devDependencies": {
+    "@types/jest": "^26.0.24",
+    "@types/node": "^16.6.1",
+    "jest": "^27.0.6",
+    "prettier": "^2.3.2",
+    "ts-jest": "^27.0.4",
+    "ts-node": "^10.2.0",
+    "ts-node-dev": "^1.1.8",
+    "typescript": "^4.3.5"
+  }
+}
