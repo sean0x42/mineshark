@@ -5,6 +5,7 @@
   "main": "dist/proxy.js",
   "author": "Sean Bailey <hello@seanbailey.dev>",
   "scripts": {
+    "build": "tsc",
     "start": "ts-node src/proxy.ts",
     "dev": "ts-node-dev src/proxy.ts",
     "fmt": "prettier --write .",
