@@ -1,20 +1,22 @@
-import { getPacketId, PacketKind } from "../packet";
-
-function isBuffer(value: Buffer | number[]): value is Buffer {
-  return (value as Buffer).write !== undefined;
-}
+import Registry from "./registry";
+import { PacketKind } from "./types";
 
 export default class PacketWriter {
   private buffer = Buffer.allocUnsafe(0);
   private length = 0;
 
   constructor(kind: PacketKind) {
-    const packetId = getPacketId(kind);
+    const packetId = Registry.getPacketByKind(kind)?.id;
+
+    if (!packetId) {
+      throw new Error(`No packet registered for kind ${kind}`);
+    }
+
     this.writeVarInt(packetId);
   }
 
   private push(buffer: Buffer): void {
-    this.buffer = Buffer.concat([this.buffer, buffer])
+    this.buffer = Buffer.concat([this.buffer, buffer]);
     this.length += buffer.length;
   }
 
@@ -68,6 +70,6 @@ export default class PacketWriter {
 
   public toBuffer(): Buffer {
     const length = this.computeVarInt(this.length);
-    return Buffer.concat([length, this.buffer])
+    return Buffer.concat([length, this.buffer]);
   }
 }

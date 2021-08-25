@@ -1,4 +1,4 @@
-import { Packet, PacketSource } from "../packet";
+import { Packet, PacketSource } from "../packets/types";
 
 export interface PacketMiddleware {
   (source: PacketSource, packet: Packet): void;

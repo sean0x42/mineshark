@@ -1,27 +1,26 @@
-import crypto from "crypto";
+import { generateKeyPairSync } from "crypto";
 import { createServer, Socket } from "net";
-import { PacketKind, PacketSource } from "./packet";
 
-import encodePem from "./encodePem";
-import readPacket from "./reader";
-import writePacket from "./writer";
+import encodeToPem from "./pemEncode";
 import { numericToState, State } from "./state";
+import { readPacket, writePacket } from "./packets";
+import { PacketKind, PacketSource } from "./packets/types";
 
 const listenPort = 25566;
 const upstreamHost = "localhost";
 const upstreamPort = 25565;
 
 console.log("Generating new RSA key pair...");
-const { publicKey, privateKey } = crypto.generateKeyPairSync("rsa", {
+const { publicKey, privateKey } = generateKeyPairSync("rsa", {
   modulusLength: 1028,
 });
 console.log("Done");
 
 function listener(clientSocket: Socket): void {
-  let clientState = State.Handshaking;
+  let clientState = State.Handshake;
   let serverState = State.Status;
 
-  let clientPublicKey: crypto.KeyObject | null = null;
+  let clientPublicKey: string | null = null;
   let serverPublicKey: string | null = null;
 
   const serverSocket = new Socket();
@@ -38,12 +37,11 @@ function listener(clientSocket: Socket): void {
     packet !== null && console.debug(packet);
 
     if (packet && packet.kind === PacketKind.Handshake) {
-      clientState =
-        numericToState[packet.payload!.nextState as number] ?? State.Status;
+      clientState = numericToState[packet.payload.nextState] ?? State.Status;
       serverState = clientState;
     }
 
-    const finalBuffer = packet ? writePacket(packet) ?? buffer : buffer
+    const finalBuffer = packet ? writePacket(packet) ?? buffer : buffer;
     const isFlushed = serverSocket.write(finalBuffer);
     if (!isFlushed) {
       console.log("Server socket not flushed. Pausing server socket.");
@@ -56,7 +54,7 @@ function listener(clientSocket: Socket): void {
     packet !== null && console.debug(packet);
 
     if (packet && packet.kind === PacketKind.EncryptionRequest) {
-      serverPublicKey = encodePem(packet.payload!.publicKey as Buffer);
+      serverPublicKey = encodeToPem(packet.payload.publicKey);
       console.debug({ serverPublicKey });
     }
 
@@ -65,7 +63,9 @@ function listener(clientSocket: Socket): void {
       serverState = State.Play;
     }
 
-    const isFlushed = clientSocket.write(packet ? writePacket(packet) ?? buffer : buffer);
+    const isFlushed = clientSocket.write(
+      packet ? writePacket(packet) ?? buffer : buffer
+    );
     if (!isFlushed) {
       console.log("Client socket not flushed. Pausing server socket.");
       serverSocket.pause();

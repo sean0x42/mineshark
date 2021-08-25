@@ -35,7 +35,7 @@ export default class PacketReader {
     return value;
   }
 
-  public readUUID(): string {
+  public readUuid(): string {
     const partA = this.buffer.readBigUInt64BE(this.cursor);
     const partB = this.buffer.readBigUInt64BE(this.cursor + 8);
     this.cursor += 16;
