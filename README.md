@@ -1,6 +1,6 @@
 # Mineshark 🦈
 
-> **Note:**This project is for educational purposes only. Please only ever use
+> **Note:** This project is for educational purposes only. Please only ever use
 > this tool against your own client, or clients that have explicitly consented.
 
 A packet sniffing proxy that sits between a Minecraft client and server.
