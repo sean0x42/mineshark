@@ -1,9 +1,11 @@
-# Mineshark 🦈
+# Mineshark 🦈 (WIP)
 
 > **Note:** This project is for educational purposes only. Please only ever use
 > this tool against your own client, or clients that have explicitly consented.
 
-A packet sniffing proxy that sits between a Minecraft client and server.
+A (work in progress) packet sniffing proxy that sits between a Minecraft client
+and server. Mineshark is not really ready for use yet, but you can mess around
+if you like.
 
 ## Features
 
