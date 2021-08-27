@@ -1,6 +1,6 @@
+import { State } from "../state";
 import Registry from "./registry";
 import HandshakePacket from "./types/handshake";
-import { State } from "../state";
 import { PacketKind, PacketSource } from "./types";
 
 Registry.register({

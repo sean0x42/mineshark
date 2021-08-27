@@ -1,7 +1,7 @@
+import { State } from "../state";
 import Registry from "./registry";
 import PacketReader from "./reader";
 import PacketWriter from "./writer";
-import { State } from "../state";
 import { Packet, PacketBase, PacketSource } from "./types";
 
 export function readPacket(

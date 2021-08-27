@@ -1,6 +1,6 @@
+import { State } from "../state";
 import PacketReader from "./reader";
 import PacketWriter from "./writer";
-import { State } from "../state";
 import { Packet, PacketKind, PacketSource } from "./types";
 
 interface ReadImplementor {

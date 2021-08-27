@@ -15,7 +15,9 @@ Registry.register({
     },
   }),
 
-  write: () => {}, // TODO
+  write: () => {
+    // TODO
+  },
 });
 
 Registry.register({
@@ -32,7 +34,9 @@ Registry.register({
     },
   }),
 
-  write: () => {}, // TODO
+  write: () => {
+    // TODO
+  },
 });
 
 Registry.register({
@@ -48,7 +52,9 @@ Registry.register({
     },
   }),
 
-  write: () => {}, // TODO
+  write: () => {
+    // TODO
+  },
 });
 
 Registry.register({
@@ -64,7 +70,9 @@ Registry.register({
     },
   }),
 
-  write: () => {}, // TODO
+  write: () => {
+    // TODO
+  },
 });
 
 Registry.register({
@@ -82,7 +90,9 @@ Registry.register({
     },
   }),
 
-  write: () => {}, // TODO
+  write: () => {
+    // TODO
+  },
 });
 
 Registry.register({
@@ -99,7 +109,9 @@ Registry.register({
     },
   }),
 
-  write: () => {}, // TODO
+  write: () => {
+    // TODO
+  },
 });
 
 Registry.register({
@@ -117,7 +129,9 @@ Registry.register({
     },
   }),
 
-  write: () => {}, // TODO
+  write: () => {
+    // TODO
+  },
 });
 
 Registry.register({
@@ -137,5 +151,7 @@ Registry.register({
     },
   }),
 
-  write: () => {}, // TODO
+  write: () => {
+    // TODO
+  },
 });

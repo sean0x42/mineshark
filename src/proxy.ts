@@ -11,7 +11,7 @@ const upstreamHost = "localhost";
 const upstreamPort = 25565;
 
 console.log("Generating new RSA key pair...");
-const { publicKey, privateKey } = generateKeyPairSync("rsa", {
+/*const { publicKey, privateKey } = */ generateKeyPairSync("rsa", {
   modulusLength: 1028,
 });
 console.log("Done");
@@ -20,7 +20,7 @@ function listener(clientSocket: Socket): void {
   let clientState = State.Handshake;
   let serverState = State.Status;
 
-  let clientPublicKey: string | null = null;
+  // let clientPublicKey: string | null = null;
   let serverPublicKey: string | null = null;
 
   const serverSocket = new Socket();

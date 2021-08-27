@@ -13,11 +13,3 @@ if you like.
 2. Kill packets in transit
 3. Construct and send new packets. You can copy existing packets to essentially
    mutate them in transit.
-
-## Project layout
-
-| Directory     | Purpose                                                                    |
-| :------------ | :------------------------------------------------------------------------- |
-| `middleware/` | Contains middleware that should be run over each packet.                   |
-| `reader/`     | Logic for reading packets as a byte array into more useful packet objects. |
-| `writer/`     | Logic for converting packet objects back into byte arrays.                 |

@@ -9,11 +9,16 @@
     "start": "ts-node src/proxy.ts",
     "dev": "ts-node-dev src/proxy.ts",
     "fmt": "prettier --write .",
-    "test": "jest"
+    "test": "jest",
+    "lint": "eslint \"src/**\""
   },
   "devDependencies": {
     "@types/jest": "^26.0.24",
     "@types/node": "^16.6.1",
+    "@typescript-eslint/eslint-plugin": "^4.29.3",
+    "@typescript-eslint/parser": "^4.29.3",
+    "eslint": "^7.32.0",
+    "eslint-plugin-import": "^2.24.2",
     "jest": "^27.0.6",
     "prettier": "^2.3.2",
     "ts-jest": "^27.0.4",

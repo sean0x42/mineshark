@@ -1,5 +1,5 @@
-import Registry from "./registry";
 import { State } from "../state";
+import Registry from "./registry";
 import { PacketKind, PacketSource } from "./types";
 import { PingPacket, PongPacket, ResponsePacket } from "./types/status";
 
@@ -14,7 +14,9 @@ Registry.register({
     payload: null,
   }),
 
-  write: () => {},
+  write: () => {
+    // do nothing
+  },
 });
 
 Registry.register({

@@ -1,5 +1,5 @@
-import { PacketBase } from ".";
 import { PacketKind } from "./kind";
+import { PacketBase } from ".";
 
 export interface HandshakePacket extends PacketBase {
   kind: PacketKind.Handshake;
