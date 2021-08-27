@@ -8,7 +8,7 @@ export default class PacketWriter {
   constructor(kind: PacketKind) {
     const packetId = Registry.getPacketByKind(kind)?.id;
 
-    if (!packetId) {
+    if (packetId === undefined) {
       throw new Error(`No packet registered for kind ${kind}`);
     }
 

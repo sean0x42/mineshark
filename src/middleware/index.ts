@@ -1,11 +1,10 @@
-import { Packet, PacketSource } from "../packets/types";
+import MiddlewareController from "./controller";
+import customStatus from "./lib/customStatus";
 
-export interface PacketMiddleware {
-  (source: PacketSource, packet: Packet): void;
-}
+export default function initialiseMiddleware(): MiddlewareController {
+  const controller = new MiddlewareController();
 
-const middleware: PacketMiddleware[] = [];
+  controller.use(customStatus);
 
-export function applyMiddleware(source: PacketSource, packet: Packet) {
-  middleware.forEach((m) => m(source, packet));
+  return controller;
 }

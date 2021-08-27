@@ -4,6 +4,9 @@ import PacketReader from "./reader";
 import PacketWriter from "./writer";
 import { Packet, PacketBase, PacketSource } from "./types";
 import { log } from "../logger";
+import "./handshake";
+import "./login";
+import "./status";
 
 export function readPacket(
   state: State,
@@ -39,6 +42,7 @@ export function writePacket(packet: Packet): Buffer | null {
     return null;
   }
 
+  log.trace({ packet }, "writing packet");
   packetConfig.write(packetWriter, packet);
   return packetWriter.toBuffer();
 }

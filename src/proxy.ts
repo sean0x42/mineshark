@@ -3,16 +3,19 @@ import { Socket } from "net";
 import encodeToPem from "./pemEncode";
 import { numericToState, State } from "./state";
 import { readPacket, writePacket } from "./packets";
-import { PacketKind, PacketSource } from "./packets/types";
+import { Packet, PacketKind, PacketSource } from "./packets/types";
 import { log } from "./logger";
+import initialiseMiddleware from "./middleware";
 
 export default function createProxyListener(
   serverHost: string,
   serverPort: number
 ) {
   return (clientSocket: Socket): void => {
+    const middleware = initialiseMiddleware();
     const clientAddr = `${clientSocket.remoteAddress}:${clientSocket.remotePort}`;
-    const playerName = "unknown";
+    let playerName = "unknown";
+
     let clientState = State.Handshake;
     let serverState = State.Status;
 
@@ -22,20 +25,20 @@ export default function createProxyListener(
     const serverSocket = new Socket();
     serverSocket.connect(serverPort, serverHost);
 
-    function onClientConnect() {
-      log.info(`Established connection with new client: ${clientAddr}`);
-    }
+    log.info(`Established connection with new client: ${clientAddr}`);
 
-    function writeToServer(buffer: Buffer) {
+    function writeToServer(buffer: Buffer): void {
       const isFlushed = serverSocket.write(buffer);
+
       if (!isFlushed) {
         log.trace("Server socket not flushed. Pausing server socket.");
         clientSocket.pause();
       }
     }
 
-    function writeToClient(buffer: Buffer) {
+    function writeToClient(buffer: Buffer): void {
       const isFlushed = clientSocket.write(buffer);
+
       if (!isFlushed) {
         log.trace(
           { clientAddr, playerName },
@@ -45,33 +48,35 @@ export default function createProxyListener(
       }
     }
 
-    function onClientData(buffer: Buffer) {
+    clientSocket.on("data", (buffer: Buffer) => {
       const packet = readPacket(clientState, PacketSource.Client, buffer);
 
+      // Unsupported packets should just be immediately proxied
       if (packet === null) {
         writeToServer(buffer);
         return;
       }
-
-      log.info(packet);
 
       if (packet.kind === PacketKind.Handshake) {
         clientState = numericToState[packet.payload.nextState] ?? State.Status;
         serverState = clientState;
       }
 
-      writeToServer(writePacket(packet) ?? buffer);
-    }
+      if (packet.kind === PacketKind.Login) {
+        playerName = packet.payload.username;
+      }
 
-    function onServerData(buffer: Buffer) {
+      middleware.apply(packet);
+    });
+
+    serverSocket.on("data", (buffer: Buffer) => {
       const packet = readPacket(serverState, PacketSource.Server, buffer);
 
+      // Unsupported packets should just be immediately proxied
       if (packet === null) {
         writeToClient(buffer);
         return;
       }
-
-      log.info(packet);
 
       if (packet.kind === PacketKind.EncryptionRequest) {
         serverPublicKey = encodeToPem(packet.payload.publicKey);
@@ -79,14 +84,28 @@ export default function createProxyListener(
       }
 
       if (packet.kind === PacketKind.LoginSuccess) {
+        playerName = packet.payload.username;
         clientState = State.Play;
         serverState = State.Play;
       }
 
-      writeToClient(writePacket(packet) ?? buffer);
-    }
+      middleware.apply(packet);
+    });
 
-    function onClientClose(didError: boolean) {
+    middleware.on("packet", (packet: Packet) => {
+      const buffer = writePacket(packet);
+
+      if (buffer === null) {
+        log.warn({ packet }, "Failed to write packet to a buffer.");
+        return;
+      }
+
+      packet.source === PacketSource.Client
+        ? writeToServer(buffer)
+        : writeToClient(buffer);
+    });
+
+    clientSocket.on("close", (didError) => {
       if (didError) {
         log.error(
           { clientAddr, playerName },
@@ -97,9 +116,9 @@ export default function createProxyListener(
       }
 
       serverSocket.end();
-    }
+    });
 
-    function onServerClose(didError: boolean) {
+    serverSocket.on("close", (didError) => {
       if (didError) {
         log.error("Server closed connection in response to an error");
       } else {
@@ -107,14 +126,9 @@ export default function createProxyListener(
       }
 
       clientSocket.end();
-    }
+    });
 
-    clientSocket.on("connect", onClientConnect);
-    clientSocket.on("data", onClientData);
-    serverSocket.on("data", onServerData);
     clientSocket.on("drain", () => serverSocket.resume());
     serverSocket.on("drain", () => clientSocket.resume());
-    clientSocket.on("close", onClientClose);
-    serverSocket.on("close", onServerClose);
   };
 }
