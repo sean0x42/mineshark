@@ -3,6 +3,7 @@ import Registry from "./registry";
 import PacketReader from "./reader";
 import PacketWriter from "./writer";
 import { Packet, PacketBase, PacketSource } from "./types";
+import { log } from "../logger";
 
 export function readPacket(
   state: State,
@@ -13,8 +14,9 @@ export function readPacket(
   const registryEntry = Registry.findPacket(packetReader.id, state, source);
 
   if (registryEntry === undefined) {
-    console.warn(
-      `Warn: No packet reader is defined for id ${packetReader.id}, source ${source}, state ${state}`
+    log.warn(
+      { source, state },
+      `Warn: No packet reader is defined for id ${packetReader.id}`
     );
     return null;
   }
@@ -33,7 +35,7 @@ export function writePacket(packet: Packet): Buffer | null {
   const packetConfig = Registry.getPacketByKind(packet.kind);
 
   if (packetConfig === undefined) {
-    console.warn(`Warn: No packet writer is defined for kind ${packet.kind}`);
+    log.warn(`Warn: No packet writer is defined for kind ${packet.kind}`);
     return null;
   }
 

@@ -4,12 +4,15 @@ import encodeToPem from "./pemEncode";
 import { numericToState, State } from "./state";
 import { readPacket, writePacket } from "./packets";
 import { PacketKind, PacketSource } from "./packets/types";
+import { log } from "./logger";
 
 export default function createProxyListener(
   serverHost: string,
   serverPort: number
 ) {
   return (clientSocket: Socket): void => {
+    const clientAddr = `${clientSocket.remoteAddress}:${clientSocket.remotePort}`;
+    const playerName = "unknown";
     let clientState = State.Handshake;
     let serverState = State.Status;
 
@@ -20,65 +23,89 @@ export default function createProxyListener(
     serverSocket.connect(serverPort, serverHost);
 
     function onClientConnect() {
-      const addr = `${clientSocket.remoteAddress}:${clientSocket.remotePort}`;
-      console.log(`Established connection with ${addr}`);
+      log.info(`Established connection with new client: ${clientAddr}`);
     }
 
-    function onClientData(buffer: Buffer) {
-      const packet = readPacket(clientState, PacketSource.Client, buffer);
-      packet !== null && console.debug(packet);
-
-      if (packet && packet.kind === PacketKind.Handshake) {
-        clientState = numericToState[packet.payload.nextState] ?? State.Status;
-        serverState = clientState;
-      }
-
-      const finalBuffer = packet ? writePacket(packet) ?? buffer : buffer;
-      const isFlushed = serverSocket.write(finalBuffer);
+    function writeToServer(buffer: Buffer) {
+      const isFlushed = serverSocket.write(buffer);
       if (!isFlushed) {
-        console.log("Server socket not flushed. Pausing server socket.");
+        log.trace("Server socket not flushed. Pausing server socket.");
         clientSocket.pause();
       }
     }
 
-    function onServerData(buffer: Buffer) {
-      const packet = readPacket(serverState, PacketSource.Server, buffer);
-      packet !== null && console.debug(packet);
-
-      if (packet && packet.kind === PacketKind.EncryptionRequest) {
-        serverPublicKey = encodeToPem(packet.payload.publicKey);
-        console.debug({ serverPublicKey });
-      }
-
-      if (packet && packet.kind === PacketKind.LoginSuccess) {
-        clientState = State.Play;
-        serverState = State.Play;
-      }
-
-      const isFlushed = clientSocket.write(
-        packet ? writePacket(packet) ?? buffer : buffer
-      );
+    function writeToClient(buffer: Buffer) {
+      const isFlushed = clientSocket.write(buffer);
       if (!isFlushed) {
-        console.log("Client socket not flushed. Pausing server socket.");
+        log.trace(
+          { clientAddr, playerName },
+          "Client socket not flushed. Pausing server socket."
+        );
         serverSocket.pause();
       }
     }
 
+    function onClientData(buffer: Buffer) {
+      const packet = readPacket(clientState, PacketSource.Client, buffer);
+
+      if (packet === null) {
+        writeToServer(buffer);
+        return;
+      }
+
+      log.info(packet);
+
+      if (packet.kind === PacketKind.Handshake) {
+        clientState = numericToState[packet.payload.nextState] ?? State.Status;
+        serverState = clientState;
+      }
+
+      writeToServer(writePacket(packet) ?? buffer);
+    }
+
+    function onServerData(buffer: Buffer) {
+      const packet = readPacket(serverState, PacketSource.Server, buffer);
+
+      if (packet === null) {
+        writeToClient(buffer);
+        return;
+      }
+
+      log.info(packet);
+
+      if (packet.kind === PacketKind.EncryptionRequest) {
+        serverPublicKey = encodeToPem(packet.payload.publicKey);
+        log.debug({ serverPublicKey }, "Server public key");
+      }
+
+      if (packet.kind === PacketKind.LoginSuccess) {
+        clientState = State.Play;
+        serverState = State.Play;
+      }
+
+      writeToClient(writePacket(packet) ?? buffer);
+    }
+
     function onClientClose(didError: boolean) {
-      console.log(
-        !didError
-          ? "Client closed connection"
-          : "Client closed connection in response to an error"
-      );
+      if (didError) {
+        log.error(
+          { clientAddr, playerName },
+          "Client closed connection in response to an error"
+        );
+      } else {
+        log.info({ clientAddr, playerName }, "Client closed connection");
+      }
+
       serverSocket.end();
     }
 
     function onServerClose(didError: boolean) {
-      console.log(
-        !didError
-          ? "Server closed connection"
-          : "Server closed connection in response to an error"
-      );
+      if (didError) {
+        log.error("Server closed connection in response to an error");
+      } else {
+        log.info("Server closed connection");
+      }
+
       clientSocket.end();
     }
 
