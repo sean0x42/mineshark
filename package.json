@@ -1,13 +1,13 @@
 {
   "name": "mineshark",
-  "version": "1.0.0",
+  "version": "1.0.0-indev",
   "description": "A packet sniffing proxy that sits between a Minecraft client and server.",
-  "main": "dist/proxy.js",
+  "main": "dist/index.js",
   "author": "Sean Bailey <hello@seanbailey.dev>",
   "scripts": {
     "build": "tsc",
-    "start": "ts-node src/proxy.ts",
-    "dev": "ts-node-dev src/proxy.ts",
+    "start": "ts-node src/index.ts",
+    "dev": "ts-node-dev src/index.ts",
     "fmt": "prettier --write .",
     "test": "jest",
     "lint": "eslint \"src/**\""

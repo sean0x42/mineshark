@@ -25,6 +25,6 @@ module.exports = {
         "newlines-between": "always",
       },
     ],
-    "import/newline-after-import": "error"
+    "import/newline-after-import": "error",
   },
 };
