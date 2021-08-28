@@ -8,11 +8,6 @@ export interface EmitFn {
   (packet: Packet): void;
 }
 
-export interface MiddlewareCallbacks {
-  next: NextFn;
-  emit: EmitFn;
-}
-
 export interface Middleware {
-  (packet: Packet, callbacks: MiddlewareCallbacks): void;
+  (packet: Packet, next: NextFn, emit: EmitFn): void;
 }

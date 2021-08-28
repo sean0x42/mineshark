@@ -1,18 +1,18 @@
-import clonePacket from "../../clonePacket";
-import { log } from "../../logger";
-import { PacketKind } from "../../packets/types";
-import { Middleware } from "../types";
+import produce from "immer";
 
-const customStatus: Middleware = (packet, { next }) => {
+import { log } from "../../logger";
+import { Packet, PacketKind } from "../../packets/types";
+import { NextFn } from "../types";
+
+export default function customStatus(packet: Packet, next: NextFn): void {
   if (packet.kind !== PacketKind.Response) {
     return next();
   }
 
-  log.trace("Editing server status message");
+  const nextPacket = produce(packet, (draft) => {
+    log.trace("Editing server status message");
+    draft.payload.description.text = `[Mineshark] ${packet.payload.description.text}`;
+  });
 
-  const copy = clonePacket(packet);
-  copy.payload.description.text = `[Mineshark] ${packet.payload.description.text}`;
-  next(copy);
-};
-
-export default customStatus;
+  next(nextPacket);
+}
