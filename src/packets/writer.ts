@@ -43,10 +43,40 @@ export default class PacketWriter {
     return this;
   }
 
+  public writeBoolean(value: boolean): PacketWriter {
+    this.push(Buffer.from([value ? 0x01 : 0x00]));
+
+    return this;
+  }
+
   public writeString(value: string): PacketWriter {
     const buffer = Buffer.from(value, "utf-8");
 
     this.writeVarInt(buffer.length);
+    this.push(buffer);
+
+    return this;
+  }
+
+  // TODO improve this function
+  public writeUuid(uuid: Buffer): PacketWriter {
+    this.push(uuid);
+
+    return this;
+  }
+
+  public writeChat(chat: string): PacketWriter {
+    return this.writeString(chat);
+  }
+
+  public writeByteArrayWithLength(buffer: Buffer): PacketWriter {
+    this.writeVarInt(buffer.length);
+    this.push(buffer);
+
+    return this;
+  }
+
+  public writeByteArray(buffer: Buffer): PacketWriter {
     this.push(buffer);
 
     return this;

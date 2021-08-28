@@ -1,6 +1,16 @@
 import { State } from "../state";
 import Registry from "./registry";
 import { PacketKind, PacketSource } from "./types";
+import {
+  DisconnectPacket,
+  EncryptionRequestPacket,
+  EncryptionResponsePacket,
+  LoginPacket,
+  LoginPluginRequestPacket,
+  LoginPluginResponsePacket,
+  LoginSuccessPacket,
+  SetCompressionPacket,
+} from "./types/login";
 
 Registry.register({
   id: 0,
@@ -15,8 +25,9 @@ Registry.register({
     },
   }),
 
-  write: () => {
-    // TODO
+  write: (writer, packet) => {
+    const { username } = (packet as LoginPacket).payload;
+    writer.writeString(username);
   },
 });
 
@@ -34,8 +45,9 @@ Registry.register({
     },
   }),
 
-  write: () => {
-    // TODO
+  write: (writer, packet) => {
+    const { uuid, username } = (packet as LoginSuccessPacket).payload;
+    writer.writeUuid(uuid).writeString(username);
   },
 });
 
@@ -46,14 +58,15 @@ Registry.register({
   state: State.Login,
 
   read: (reader) => ({
-    kind: PacketKind.LoginSuccess,
+    kind: PacketKind.Disconnect,
     payload: {
       reason: reader.readChat(),
     },
   }),
 
-  write: () => {
-    // TODO
+  write: (writer, packet) => {
+    const { reason } = (packet as DisconnectPacket).payload;
+    writer.writeChat(reason);
   },
 });
 
@@ -70,8 +83,9 @@ Registry.register({
     },
   }),
 
-  write: () => {
-    // TODO
+  write: (writer, packet) => {
+    const { threshold } = (packet as SetCompressionPacket).payload;
+    writer.writeVarInt(threshold);
   },
 });
 
@@ -85,13 +99,19 @@ Registry.register({
     kind: PacketKind.EncryptionRequest,
     payload: {
       serverId: reader.readString(),
-      publicKey: reader.readByteArrayWithPrefix(),
-      verifyToken: reader.readByteArrayWithPrefix(),
+      publicKey: reader.readByteArrayWithLength(),
+      verifyToken: reader.readByteArrayWithLength(),
     },
   }),
 
-  write: () => {
-    // TODO
+  write: (writer, packet) => {
+    const { serverId, publicKey, verifyToken } = (
+      packet as EncryptionRequestPacket
+    ).payload;
+    writer
+      .writeString(serverId)
+      .writeByteArrayWithLength(publicKey)
+      .writeByteArrayWithLength(verifyToken);
   },
 });
 
@@ -104,13 +124,17 @@ Registry.register({
   read: (reader) => ({
     kind: PacketKind.EncryptionResponse,
     payload: {
-      sharedSecret: reader.readByteArrayWithPrefix(),
-      verifyToken: reader.readByteArrayWithPrefix(),
+      sharedSecret: reader.readByteArrayWithLength(),
+      verifyToken: reader.readByteArrayWithLength(),
     },
   }),
 
-  write: () => {
-    // TODO
+  write: (writer, packet) => {
+    const { sharedSecret, verifyToken } = (packet as EncryptionResponsePacket)
+      .payload;
+    writer
+      .writeByteArrayWithLength(sharedSecret)
+      .writeByteArrayWithLength(verifyToken);
   },
 });
 
@@ -129,8 +153,10 @@ Registry.register({
     },
   }),
 
-  write: () => {
-    // TODO
+  write: (writer, packet) => {
+    const { messageId, channel, data } = (packet as LoginPluginRequestPacket)
+      .payload;
+    writer.writeVarInt(messageId).writeString(channel).writeByteArray(data);
   },
 });
 
@@ -151,7 +177,14 @@ Registry.register({
     },
   }),
 
-  write: () => {
-    // TODO
+  write: (writer, packet) => {
+    const { messageId, successful, data } = (
+      packet as LoginPluginResponsePacket
+    ).payload;
+    writer.writeVarInt(messageId).writeBoolean(successful);
+
+    if (data) {
+      writer.writeByteArray(data);
+    }
   },
 });

@@ -1,6 +1,5 @@
 import { Socket } from "net";
 
-import encodeToPem from "./pemEncode";
 import { numericToState, State } from "./state";
 import { readPacket, writePacket } from "./packets";
 import { Packet, PacketKind, PacketSource } from "./packets/types";
@@ -19,15 +18,31 @@ export default function createProxyListener(
     let clientState = State.Handshake;
     let serverState = State.Status;
 
-    // let clientPublicKey: string | null = null;
-    let serverPublicKey: string | null = null;
+    let isConnected = false;
+    const bufferQueue: Buffer[] = [];
+
+    log.info(`Established connection with new client: ${clientAddr}`);
 
     const serverSocket = new Socket();
     serverSocket.connect(serverPort, serverHost);
 
-    log.info(`Established connection with new client: ${clientAddr}`);
+    serverSocket.on("connect", () => {
+      log.info("Connected to server");
+      isConnected = true;
+
+      if (bufferQueue.length !== 0) {
+        log.trace({ length: bufferQueue.length }, "Emptying server queue");
+        bufferQueue.forEach((buffer) => writeToServer(buffer));
+        bufferQueue.length = 0;
+      }
+    });
 
     function writeToServer(buffer: Buffer): void {
+      if (!isConnected) {
+        bufferQueue.push(buffer);
+        return;
+      }
+
       const isFlushed = serverSocket.write(buffer);
 
       if (!isFlushed) {
@@ -79,8 +94,7 @@ export default function createProxyListener(
       }
 
       if (packet.kind === PacketKind.EncryptionRequest) {
-        serverPublicKey = encodeToPem(packet.payload.publicKey);
-        log.debug({ serverPublicKey }, "Server public key");
+        log.warn("Server must be set to offline mode. See https://github.com/sean0x42/mineshark#offline-mode");
       }
 
       if (packet.kind === PacketKind.LoginSuccess) {

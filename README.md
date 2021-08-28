@@ -13,3 +13,20 @@ if you like.
 2. Kill packets in transit
 3. Construct and send new packets. You can copy existing packets to essentially
    mutate them in transit.
+
+## Offline Mode
+
+Note that the target Minecraft server MUST be set to offline mode for this to
+work. Online servers have an extra protection against [man-in-the-middle
+attacks][mitm], which prevents Mineshark from working on any packets after a
+successful login.
+
+As a quick summary, both the Minecraft client and server will contact Mojang's
+authentication services during login. They will both generate a hash, including
+the server's public key that is used for encryption. The basis of a MITM attack
+involves changing this public key in transit, and so when the client and server
+generate this hash, they produce different values.
+
+[mitm]: https://en.wikipedia.org/wiki/Man-in-the-middle_attack
+
+> todo create a diagram for this

@@ -1,4 +1,3 @@
-import { generateKeyPairSync } from "crypto";
 import { createServer } from "net";
 
 import { log } from "./logger";
@@ -7,12 +6,6 @@ import createProxyListener from "./proxy";
 const listenPort = 25566;
 const serverHost = "localhost";
 const serverPort = 25565;
-
-log.debug("Generating new RSA key pair...");
-/*const { publicKey, privateKey } = */ generateKeyPairSync("rsa", {
-  modulusLength: 1028,
-});
-log.debug("Done");
 
 const server = createServer(createProxyListener(serverHost, serverPort));
 server.listen(listenPort);

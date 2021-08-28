@@ -35,19 +35,20 @@ export default class PacketReader {
     return value;
   }
 
-  public readUuid(): string {
-    const partA = this.buffer.readBigUInt64BE(this.cursor);
-    const partB = this.buffer.readBigUInt64BE(this.cursor + 8);
+  // TODO improve this function
+  public readUuid(): Buffer {
+    // const partA = this.buffer.readBigUInt64BE(this.cursor);
+    // const partB = this.buffer.readBigUInt64BE(this.cursor + 8);
+    const arr = this.buffer.slice(this.cursor, this.cursor + 16);
     this.cursor += 16;
-    // TODO this logic is wrong.
-    return `${partA.toString()}${partB.toString()}`;
+    return arr;
   }
 
   public readChat(): string {
     return this.readString();
   }
 
-  public readByteArrayWithPrefix(): Buffer {
+  public readByteArrayWithLength(): Buffer {
     const length = this.readVarInt();
     const arr = this.buffer.slice(this.cursor, this.cursor + length);
     this.cursor += length;

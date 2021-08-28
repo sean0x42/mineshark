@@ -11,7 +11,7 @@ export interface LoginPacket extends PacketBase {
 export interface LoginSuccessPacket extends PacketBase {
   kind: PacketKind.LoginSuccess;
   payload: {
-    uuid: string;
+    uuid: Buffer;
     username: string;
   };
 }
