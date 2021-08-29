@@ -18,8 +18,7 @@ export default function createProxyListener(
     let clientState = State.Handshake;
     let serverState = State.Status;
 
-    let isConnected = false;
-    const bufferQueue: Buffer[] = [];
+    let compressionThreshold = -1;
 
     log.info(`Established connection with new client: ${clientAddr}`);
 
@@ -28,21 +27,9 @@ export default function createProxyListener(
 
     serverSocket.on("connect", () => {
       log.info("Connected to server");
-      isConnected = true;
-
-      if (bufferQueue.length !== 0) {
-        log.trace({ length: bufferQueue.length }, "Emptying server queue");
-        bufferQueue.forEach((buffer) => writeToServer(buffer));
-        bufferQueue.length = 0;
-      }
     });
 
     function writeToServer(buffer: Buffer): void {
-      if (!isConnected) {
-        bufferQueue.push(buffer);
-        return;
-      }
-
       const isFlushed = serverSocket.write(buffer);
 
       if (!isFlushed) {
@@ -64,7 +51,12 @@ export default function createProxyListener(
     }
 
     clientSocket.on("data", (buffer: Buffer) => {
-      const packet = readPacket(clientState, PacketSource.Client, buffer);
+      const packet = readPacket(
+        clientState,
+        PacketSource.Client,
+        buffer,
+        compressionThreshold
+      );
 
       // Unsupported packets should just be immediately proxied
       if (packet === null) {
@@ -85,7 +77,12 @@ export default function createProxyListener(
     });
 
     serverSocket.on("data", (buffer: Buffer) => {
-      const packet = readPacket(serverState, PacketSource.Server, buffer);
+      const packet = readPacket(
+        serverState,
+        PacketSource.Server,
+        buffer,
+        compressionThreshold
+      );
 
       // Unsupported packets should just be immediately proxied
       if (packet === null) {
@@ -94,20 +91,36 @@ export default function createProxyListener(
       }
 
       if (packet.kind === PacketKind.EncryptionRequest) {
-        log.warn("Server must be set to offline mode. See https://github.com/sean0x42/mineshark#offline-mode");
+        log.warn(
+          "Server must be set to offline mode. See https://github.com/sean0x42/mineshark#offline-mode"
+        );
+      }
+
+      if (packet.kind === PacketKind.JoinGame) {
+        clientState = State.Play;
+        serverState = State.Play;
       }
 
       if (packet.kind === PacketKind.LoginSuccess) {
         playerName = packet.payload.username;
+        log.trace(
+          { playerName },
+          "Logged in successfully. Transitioning to play state"
+        );
         clientState = State.Play;
         serverState = State.Play;
+      }
+
+      if (packet.kind === PacketKind.SetCompression) {
+        compressionThreshold = packet.payload.threshold;
+        log.trace({ compressionThreshold }, "Enabling compression");
       }
 
       middleware.apply(packet);
     });
 
     middleware.on("packet", (packet: Packet) => {
-      const buffer = writePacket(packet);
+      const buffer = writePacket(packet, compressionThreshold);
 
       if (buffer === null) {
         log.warn({ packet }, "Failed to write packet to a buffer.");
@@ -142,7 +155,14 @@ export default function createProxyListener(
       clientSocket.end();
     });
 
-    clientSocket.on("drain", () => serverSocket.resume());
-    serverSocket.on("drain", () => clientSocket.resume());
+    clientSocket.on("drain", () => {
+      log.trace({ clientAddr, playerName }, "Resuming server socket");
+      serverSocket.resume();
+    });
+
+    serverSocket.on("drain", () => {
+      log.trace({ clientAddr, playerName }, "Resuming client socket");
+      clientSocket.resume();
+    });
   };
 }

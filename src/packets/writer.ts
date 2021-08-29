@@ -1,11 +1,16 @@
+import zlib from "zlib";
+
 import Registry from "./registry";
 import { PacketKind } from "./types";
 
 export default class PacketWriter {
   private buffer = Buffer.allocUnsafe(0);
   private length = 0;
+  private compressionThreshold?: number;
 
-  constructor(kind: PacketKind) {
+  constructor(kind: PacketKind, compressionThreshold?: number) {
+    this.compressionThreshold = compressionThreshold;
+
     const packetId = Registry.getPacketByKind(kind)?.id;
 
     if (packetId === undefined) {
@@ -98,8 +103,25 @@ export default class PacketWriter {
     return this;
   }
 
-  public toBuffer(): Buffer {
-    const length = this.computeVarInt(this.length);
-    return Buffer.concat([length, this.buffer]);
+  public toCompressedPacketBuffer(isCompressed: boolean): Buffer {
+    const dataLength = this.computeVarInt(isCompressed ? this.length : 0);
+    const buffer = isCompressed ? zlib.deflateSync(this.buffer) : this.buffer;
+    const packetLength = this.computeVarInt(dataLength.length + buffer.length);
+
+    return Buffer.concat([packetLength, dataLength, buffer]);
+  }
+
+  public toUncompressedPacketBuffer(): Buffer {
+    const dataLength = this.computeVarInt(this.length);
+    return Buffer.concat([dataLength, this.buffer]);
+  }
+
+  public toPacketBuffer(isCompressed: boolean): Buffer {
+    const isUsingCompressedFormat =
+      this.compressionThreshold !== undefined && this.compressionThreshold > 0;
+
+    return isUsingCompressedFormat
+      ? this.toCompressedPacketBuffer(isCompressed)
+      : this.toUncompressedPacketBuffer();
   }
 }

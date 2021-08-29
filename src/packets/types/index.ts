@@ -12,6 +12,7 @@ export interface PacketBase {
   kind: PacketKind;
   id: number;
   source: PacketSource;
+  isCompressed: boolean;
   payload: unknown;
 }
 

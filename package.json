@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsc",
     "start": "ts-node src/index.ts | bunyan",
-    "dev": "ts-node-dev src/index.ts | bunyan",
+    "dev": "ts-node-dev --inspect -- src/index.ts | bunyan",
     "fmt": "prettier --write .",
     "test": "jest",
     "lint": "eslint \"src/**\""

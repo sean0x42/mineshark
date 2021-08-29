@@ -1,12 +1,27 @@
+import zlib from "zlib";
+
 export default class PacketReader {
-  private length: number;
   id: number;
   cursor = 0;
   private buffer: Buffer;
+  isCompressed = false;
 
-  constructor(buffer: Buffer) {
+  constructor(buffer: Buffer, compressionThreshold?: number) {
     this.buffer = buffer;
-    this.length = this.readVarInt();
+
+    // Read and dispose of packet length. We won't be using it here.
+    this.readVarInt();
+
+    if (compressionThreshold !== undefined && compressionThreshold > 0) {
+      const dataLength = this.readVarInt();
+
+      if (dataLength !== 0) {
+        this.buffer = zlib.inflateSync(buffer.slice(this.cursor));
+        this.cursor = 0;
+        this.isCompressed = true;
+      }
+    }
+
     this.id = this.readVarInt();
   }
 
@@ -56,7 +71,7 @@ export default class PacketReader {
   }
 
   public readRemainingByteArray(): Buffer {
-    const arr = this.buffer.slice(this.cursor, this.buffer.length);
+    const arr = this.buffer.slice(this.cursor);
     this.cursor = this.buffer.length;
     return arr;
   }
