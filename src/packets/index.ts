@@ -1,6 +1,6 @@
 import { State } from "../state";
 import Registry from "./registry";
-import PacketReader from "./reader";
+import PacketReader from "../reader/packetReader";
 import PacketWriter from "./writer";
 import { Packet, PacketBase, PacketKind, PacketSource } from "./types";
 import { log } from "../logger";
@@ -13,9 +13,9 @@ export function readPacket(
   state: State,
   source: PacketSource,
   buffer: Buffer,
-  compressionThreshold?: number
+  useCompressedFormat: boolean
 ): Packet | null {
-  const packetReader = new PacketReader(buffer, compressionThreshold);
+  const packetReader = new PacketReader(buffer, useCompressedFormat);
 
   // For some reason a GameJoin packet is coming instead of LoginSuccess... not really sure why.
   // This is a quick hack to work around that case.

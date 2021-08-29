@@ -55,7 +55,7 @@ export default function createProxyListener(
         clientState,
         PacketSource.Client,
         buffer,
-        compressionThreshold
+        compressionThreshold !== undefined && compressionThreshold > 0
       );
 
       // Unsupported packets should just be immediately proxied
