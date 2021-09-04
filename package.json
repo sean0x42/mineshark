@@ -10,7 +10,8 @@
     "dev": "ts-node-dev --inspect -- src/index.ts | bunyan",
     "fmt": "prettier --write .",
     "test": "jest",
-    "lint": "eslint \"src/**\""
+    "lint": "eslint \"src/**\"",
+    "readNbt": "ts-node scripts/readNbtToNumberArray.ts"
   },
   "dependencies": {
     "bunyan": "^1.8.15",
