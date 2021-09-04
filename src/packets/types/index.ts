@@ -1,6 +1,7 @@
 import AnyHandshakePacket from "./handshake";
 import AnyStatusPacket from "./status";
 import AnyLoginPacket from "./login";
+import AnyPlayPacket from "./play";
 import { PacketKind } from "./kind";
 
 export enum PacketSource {
@@ -16,5 +17,9 @@ export interface PacketBase {
   payload: unknown;
 }
 
-export type Packet = AnyHandshakePacket | AnyStatusPacket | AnyLoginPacket;
+export type Packet =
+  | AnyHandshakePacket
+  | AnyStatusPacket
+  | AnyLoginPacket
+  | AnyPlayPacket;
 export { PacketKind } from "./kind";

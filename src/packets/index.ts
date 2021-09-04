@@ -1,6 +1,6 @@
 import { State } from "../state";
 import Registry from "./registry";
-import PacketReader from "../reader/packetReader";
+import PacketReader from "../reader";
 import PacketWriter from "./writer";
 import { Packet, PacketBase, PacketKind, PacketSource } from "./types";
 import { log } from "../logger";
