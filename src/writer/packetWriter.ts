@@ -1,18 +1,18 @@
 import zlib from "zlib";
 
-import Registry from "./registry";
-import { PacketKind } from "./types";
+import Registry from "../packets/registry";
+import { PacketKind } from "../packets/types";
+import ByteWriter from "./byteWriter";
 
-export default class PacketWriter {
-  private buffer = Buffer.allocUnsafe(0);
-  private length = 0;
-  private compressionThreshold?: number;
+export default class PacketWriter extends ByteWriter {
+  protected useCompressedFormat: boolean;
 
-  constructor(kind: PacketKind, compressionThreshold?: number) {
-    this.compressionThreshold = compressionThreshold;
+  constructor(kind: PacketKind, useCompressedFormat = false) {
+    super();
+
+    this.useCompressedFormat = useCompressedFormat;
 
     const packetId = Registry.getPacketByKind(kind)?.id;
-
     if (packetId === undefined) {
       throw new Error(`No packet registered for kind ${kind}`);
     }
@@ -20,12 +20,12 @@ export default class PacketWriter {
     this.writeVarInt(packetId);
   }
 
-  private push(buffer: Buffer): void {
-    this.buffer = Buffer.concat([this.buffer, buffer]);
-    this.length += buffer.length;
+  public writeBoolean(value: boolean): PacketWriter {
+    this.push(Buffer.from([value ? 0x01 : 0x00]));
+    return this;
   }
 
-  private computeVarInt(value: number): Buffer {
+  protected computeVarInt(value: number): Buffer {
     let val = value;
     const bytes: number[] = [];
 
@@ -48,8 +48,10 @@ export default class PacketWriter {
     return this;
   }
 
-  public writeBoolean(value: boolean): PacketWriter {
-    this.push(Buffer.from([value ? 0x01 : 0x00]));
+  public writeByte(value: number): PacketWriter {
+    const buffer = Buffer.allocUnsafe(1);
+    buffer.writeInt8(value);
+    this.push(buffer);
 
     return this;
   }
@@ -117,10 +119,7 @@ export default class PacketWriter {
   }
 
   public toPacketBuffer(isCompressed: boolean): Buffer {
-    const isUsingCompressedFormat =
-      this.compressionThreshold !== undefined && this.compressionThreshold > 0;
-
-    return isUsingCompressedFormat
+    return this.useCompressedFormat
       ? this.toCompressedPacketBuffer(isCompressed)
       : this.toUncompressedPacketBuffer();
   }

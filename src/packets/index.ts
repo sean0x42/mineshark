@@ -1,7 +1,7 @@
 import { State } from "../state";
 import Registry from "./registry";
 import PacketReader from "../reader";
-import PacketWriter from "./writer";
+import PacketWriter from "../writer";
 import { Packet, PacketBase, PacketKind, PacketSource } from "./types";
 import { log } from "../logger";
 import "./handshake";
@@ -49,9 +49,9 @@ export function readPacket(
 
 export function writePacket(
   packet: Packet,
-  compressionThreshold?: number
+  useCompressedFormat: boolean
 ): Buffer | null {
-  const packetWriter = new PacketWriter(packet.kind, compressionThreshold);
+  const packetWriter = new PacketWriter(packet.kind, useCompressedFormat);
   const packetConfig = Registry.getPacketByKind(packet.kind);
 
   if (packetConfig === undefined) {

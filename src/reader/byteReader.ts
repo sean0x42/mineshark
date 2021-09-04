@@ -1,16 +1,16 @@
 export default class ByteReader {
-  cursor = 0;
-  buffer: Buffer;
+  protected cursor = 0;
+  protected buffer: Buffer;
 
   constructor(buffer: Buffer) {
     this.buffer = buffer;
   }
 
-  public peekByte(): number {
+  protected peekByte(): number {
     return this.buffer[this.cursor];
   }
 
-  public popByte(): number {
+  protected popByte(): number {
     return this.buffer[this.cursor++];
   }
 

@@ -18,7 +18,7 @@ export default function createProxyListener(
     let clientState = State.Handshake;
     let serverState = State.Status;
 
-    let compressionThreshold = -1;
+    let useCompressedFormat = false;
 
     log.info(`Established connection with new client: ${clientAddr}`);
 
@@ -55,7 +55,7 @@ export default function createProxyListener(
         clientState,
         PacketSource.Client,
         buffer,
-        compressionThreshold !== undefined && compressionThreshold > 0
+        useCompressedFormat
       );
 
       // Unsupported packets should just be immediately proxied
@@ -81,7 +81,7 @@ export default function createProxyListener(
         serverState,
         PacketSource.Server,
         buffer,
-        compressionThreshold !== undefined && compressionThreshold > 0
+        useCompressedFormat
       );
 
       // Unsupported packets should just be immediately proxied
@@ -112,15 +112,17 @@ export default function createProxyListener(
       }
 
       if (packet.kind === PacketKind.SetCompression) {
-        compressionThreshold = packet.payload.threshold;
-        log.trace({ compressionThreshold }, "Enabling compression");
+        useCompressedFormat =
+          packet.payload.threshold !== undefined &&
+          packet.payload.threshold > 0;
+        log.trace({ useCompressedFormat }, "Enabling compression");
       }
 
       middleware.apply(packet);
     });
 
     middleware.on("packet", (packet: Packet) => {
-      const buffer = writePacket(packet, compressionThreshold);
+      const buffer = writePacket(packet, useCompressedFormat);
 
       if (buffer === null) {
         log.warn({ packet }, "Failed to write packet to a buffer.");
