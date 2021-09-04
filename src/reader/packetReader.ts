@@ -1,9 +1,10 @@
 import zlib from "zlib";
+
 import ByteReader from "./byteReader";
 
 class PacketReader extends ByteReader {
   id: number;
-  isCompressed: boolean = false;
+  isCompressed = false;
 
   constructor(buffer: Buffer, useCompressedFormat = false) {
     super(buffer);
@@ -46,6 +47,20 @@ class PacketReader extends ByteReader {
     return value;
   }
 
+  public readByte(): number {
+    return this.buffer.readInt8(this.cursor++);
+  }
+
+  public readUnsignedByte(): number {
+    return this.popByte();
+  }
+
+  public readShort(): number {
+    const value = this.buffer.readInt16BE(this.cursor);
+    this.cursor += 2;
+    return value;
+  }
+
   public readUnsignedShort(): number {
     const value = this.buffer.readUInt16BE(this.cursor);
     this.cursor += 2;
@@ -64,12 +79,16 @@ class PacketReader extends ByteReader {
     return value;
   }
 
-  public readUnsignedByte(): number {
-    return this.popByte();
+  public readFloat(): number {
+    const value = this.buffer.readFloatBE(this.cursor);
+    this.cursor += 4;
+    return value;
   }
 
-  public readByte(): number {
-    return this.buffer.readInt8(this.cursor++);
+  public readDouble(): number {
+    const value = this.buffer.readDoubleBE(this.cursor);
+    this.cursor += 8;
+    return value;
   }
 
   public readString(): string {

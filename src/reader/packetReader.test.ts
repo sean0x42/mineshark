@@ -6,11 +6,17 @@ describe("PacketReader", () => {
     return Buffer.from([0x00, 0x00, ...vals]);
   }
 
-  it("should read the packet id", () => {});
+  it("should read the packet id", () => {
+    // TODO
+  });
 
-  it("should inflate compressed packets", () => {});
+  it("should inflate compressed packets", () => {
+    // TODO
+  });
 
-  it("should handle uncompressed packets in the compressed format", () => {});
+  it("should handle uncompressed packets in the compressed format", () => {
+    // TODO
+  });
 
   it("should read an entire status packet", () => {
     // Given
@@ -36,7 +42,9 @@ describe("PacketReader", () => {
   });
 
   describe("readBoolean", () => {
-    it("should read booleans from the buffer", () => {});
+    it("should read booleans from the buffer", () => {
+      // TODO
+    });
   });
 
   describe("readVarInt", () => {
@@ -68,7 +76,9 @@ describe("PacketReader", () => {
   });
 
   describe("readInt", () => {
-    it("should read ints", () => {});
+    it("should read ints", () => {
+      // TODO
+    });
   });
 
   describe("readLong", () => {
@@ -88,11 +98,15 @@ describe("PacketReader", () => {
   });
 
   describe("readUnsignedByte", () => {
-    it("should read unsigned bytes", () => {});
+    it("should read unsigned bytes", () => {
+      // TODO
+    });
   });
 
   describe("readByte", () => {
-    it("should read signed bytes", () => {});
+    it("should read signed bytes", () => {
+      // TODO
+    });
   });
 
   describe("readString", () => {

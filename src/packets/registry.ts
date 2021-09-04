@@ -1,5 +1,5 @@
 import { State } from "../state";
-import PacketReader from "./reader";
+import PacketReader from "../reader";
 import PacketWriter from "./writer";
 import { Packet, PacketKind, PacketSource } from "./types";
 

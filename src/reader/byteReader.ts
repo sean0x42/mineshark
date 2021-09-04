@@ -6,6 +6,10 @@ export default class ByteReader {
     this.buffer = buffer;
   }
 
+  public peekByte(): number {
+    return this.buffer[this.cursor];
+  }
+
   public popByte(): number {
     return this.buffer[this.cursor++];
   }
