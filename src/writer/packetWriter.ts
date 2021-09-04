@@ -56,34 +56,14 @@ export default class PacketWriter extends ByteWriter {
     return this;
   }
 
-  public writeString(value: string): PacketWriter {
-    const buffer = Buffer.from(value, "utf-8");
-
-    this.writeVarInt(buffer.length);
-    this.push(buffer);
-
+  public writeUnsignedByte(value: number): PacketWriter {
+    this.push(Buffer.from([value]));
     return this;
   }
 
-  // TODO improve this function
-  public writeUuid(uuid: Buffer): PacketWriter {
-    this.push(uuid);
-
-    return this;
-  }
-
-  public writeChat(chat: string): PacketWriter {
-    return this.writeString(chat);
-  }
-
-  public writeByteArrayWithLength(buffer: Buffer): PacketWriter {
-    this.writeVarInt(buffer.length);
-    this.push(buffer);
-
-    return this;
-  }
-
-  public writeByteArray(buffer: Buffer): PacketWriter {
+  public writeShort(value: number): PacketWriter {
+    const buffer = Buffer.allocUnsafe(2);
+    buffer.writeInt16BE(value);
     this.push(buffer);
 
     return this;
@@ -97,9 +77,75 @@ export default class PacketWriter extends ByteWriter {
     return this;
   }
 
+  public writeInt(value: number): PacketWriter {
+    const buffer = Buffer.allocUnsafe(4);
+    buffer.writeInt32BE(value);
+    this.push(buffer);
+
+    return this;
+  }
+
   public writeLong(value: bigint): PacketWriter {
     const buffer = Buffer.allocUnsafe(8);
     buffer.writeBigInt64BE(value);
+    this.push(buffer);
+
+    return this;
+  }
+
+  public writeFloat(value: number): PacketWriter {
+    const buffer = Buffer.allocUnsafe(4);
+    buffer.writeFloatBE(value);
+    this.push(buffer);
+
+    return this;
+  }
+
+  public writeDouble(value: number): PacketWriter {
+    const buffer = Buffer.allocUnsafe(8);
+    buffer.writeDoubleBE(value);
+    this.push(buffer);
+
+    return this;
+  }
+
+  public writeString(value: string): PacketWriter {
+    const buffer = Buffer.from(value, "utf-8");
+
+    this.writeVarInt(buffer.length);
+    this.push(buffer);
+
+    return this;
+  }
+
+  // TODO improve
+  public writeChat(chat: string): PacketWriter {
+    return this.writeString(chat);
+  }
+
+  // TODO improve this function
+  public writeUuid(uuid: Buffer): PacketWriter {
+    this.push(uuid);
+
+    return this;
+  }
+
+  public writeIdentifierArray(arr: string[]): PacketWriter {
+    this.writeVarInt(arr.length);
+
+    arr.forEach((value) => this.writeString(value));
+
+    return this;
+  }
+
+  public writeByteArrayWithLength(buffer: Buffer): PacketWriter {
+    this.writeVarInt(buffer.length);
+    this.push(buffer);
+
+    return this;
+  }
+
+  public writeByteArray(buffer: Buffer): PacketWriter {
     this.push(buffer);
 
     return this;
