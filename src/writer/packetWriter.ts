@@ -1,7 +1,7 @@
 import zlib from "zlib";
 
-import Registry from "../packets/registry";
-import { PacketKind } from "../packets/types";
+import Registry from "../packet/registry";
+import { PacketKind } from "../packet/types";
 import ByteWriter from "./byteWriter";
 
 export default class PacketWriter extends ByteWriter {

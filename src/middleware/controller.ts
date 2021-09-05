@@ -1,6 +1,6 @@
 import EventEmitter from "events";
 
-import { Packet } from "../packets/types";
+import { Packet } from "../packet/types";
 import { Middleware, EmitFn, NextFn } from "./types";
 
 declare interface MiddlewareController {

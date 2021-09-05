@@ -1,4 +1,4 @@
-import { Packet } from "../packets/types";
+import { Packet } from "../packet/types";
 
 export interface NextFn {
   (packet?: Packet): void;

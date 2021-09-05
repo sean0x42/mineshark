@@ -1,7 +1,7 @@
 import produce from "immer";
 
 import { log } from "../../logger";
-import { Packet, PacketKind } from "../../packets/types";
+import { Packet, PacketKind } from "../../packet/types";
 import { NextFn } from "../types";
 
 export default function customStatus(packet: Packet, next: NextFn): void {
