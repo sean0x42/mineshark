@@ -10,8 +10,8 @@ export enum NbtType {
   String,
   List,
   Compound,
-  IntArray,
-  LongArray,
+  // IntArray,
+  // LongArray,
 }
 
 interface BaseNbtTag {
@@ -37,7 +37,7 @@ export interface NbtTagInt extends BaseNbtTag {
 
 export interface NbtTagLong extends BaseNbtTag {
   kind: NbtType.Long;
-  payload: BigInt;
+  payload: bigint;
 }
 
 export interface NbtTagFloat extends BaseNbtTag {
@@ -70,15 +70,15 @@ export interface NbtTagCompound extends BaseNbtTag {
   payload: Record<string, NbtTag>;
 }
 
-export interface NbtTagIntArray extends BaseNbtTag {
-  kind: NbtType.IntArray;
-  payload: Array<number>;
-}
+// export interface NbtTagIntArray extends BaseNbtTag {
+//   kind: NbtType.IntArray;
+//   payload: Array<number>;
+// }
 
-export interface NbtTagLongArray extends BaseNbtTag {
-  kind: NbtType.LongArray;
-  payload: Array<BigInt>;
-}
+// export interface NbtTagLongArray extends BaseNbtTag {
+//   kind: NbtType.LongArray;
+//   payload: Array<BigInt>;
+// }
 
 export type NbtTag =
   | NbtTagByte
@@ -90,6 +90,6 @@ export type NbtTag =
   | NbtTagByteArray
   | NbtTagString
   | NbtTagList
-  | NbtTagCompound
-  | NbtTagIntArray
-  | NbtTagLongArray;
+  | NbtTagCompound;
+// | NbtTagIntArray
+// | NbtTagLongArray;

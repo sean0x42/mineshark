@@ -1,7 +1,7 @@
 import { State } from "../state";
 import PacketReader from "../reader";
-import PacketWriter from "../writer";
 import { Packet, PacketKind, PacketSource } from "./types";
+import PacketWriter from "../writer";
 
 interface ReadImplementor {
   (reader: PacketReader): Pick<Packet, "kind" | "payload">;
@@ -11,7 +11,7 @@ interface WriteImplementor {
   (writer: PacketWriter, packet: Packet): void;
 }
 
-interface RegisteredPacket {
+export interface RegistryEntry {
   kind: PacketKind;
   source: PacketSource;
   id: number;
@@ -21,7 +21,7 @@ interface RegisteredPacket {
 }
 
 class PacketRegistry {
-  private packetsByKind: Partial<Record<PacketKind, RegisteredPacket>> = {};
+  private packetsByKind: Partial<Record<PacketKind, RegistryEntry>> = {};
 
   private packetIndex: Record<
     State,
@@ -45,12 +45,12 @@ class PacketRegistry {
     },
   };
 
-  public register(packet: RegisteredPacket): void {
+  public register(packet: RegistryEntry): void {
     this.packetsByKind[packet.kind] = packet;
     this.packetIndex[packet.state][packet.source][packet.id] = packet.kind;
   }
 
-  public getPacketByKind(kind: PacketKind): RegisteredPacket | undefined {
+  public getPacketByKind(kind: PacketKind): RegistryEntry | undefined {
     return this.packetsByKind[kind];
   }
 
@@ -58,7 +58,7 @@ class PacketRegistry {
     id: number,
     state: State,
     source: PacketSource
-  ): RegisteredPacket | undefined {
+  ): RegistryEntry | undefined {
     const kind = this.packetIndex[state][source][id];
     return kind ? this.getPacketByKind(kind) : undefined;
   }

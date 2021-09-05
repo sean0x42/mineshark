@@ -1,1 +1,1 @@
-export { default } from "./packetWriter";
+export { default } from "./nbtWriter";

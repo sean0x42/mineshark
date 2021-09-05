@@ -1,6 +1,7 @@
 import { State } from "../state";
 import Registry from "./registry";
 import { PacketKind, PacketSource } from "./types";
+import { JoinGamePacket } from "./types/play";
 
 Registry.register({
   id: 0x26,
@@ -29,7 +30,23 @@ Registry.register({
     },
   }),
 
-  write: () => {
-    // Do nothing
+  write: (writer, packet) => {
+    const payload = (packet as JoinGamePacket).payload;
+    writer
+      .writeInt(payload.entityId)
+      .writeBoolean(payload.isHardcore)
+      .writeUnsignedByte(payload.gamemode)
+      .writeByte(payload.previousGamemode)
+      .writeIdentifierArray(payload.worlds)
+      .writeNbt(payload.dimensionCodec)
+      .writeNbt(payload.dimension)
+      .writeString(payload.worldName)
+      .writeLong(payload.hashedSeed)
+      .writeVarInt(payload.maxPlayers)
+      .writeVarInt(payload.viewDistance)
+      .writeBoolean(payload.reducedDebugInfo)
+      .writeBoolean(payload.enableRespawnScreen)
+      .writeBoolean(payload.isDebug)
+      .writeBoolean(payload.isFlat);
   },
 });

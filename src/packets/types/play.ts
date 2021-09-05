@@ -1,4 +1,5 @@
 import { PacketBase } from ".";
+import { NbtTag } from "../../nbt";
 import { PacketKind } from "./kind";
 
 export interface JoinGamePacket extends PacketBase {
@@ -9,10 +10,10 @@ export interface JoinGamePacket extends PacketBase {
     gamemode: number;
     previousGamemode: number;
     worlds: string[];
-    dimensionCodec: unknown;
-    dimension: unknown;
+    dimensionCodec: NbtTag;
+    dimension: NbtTag;
     worldName: string;
-    hashedSeed: BigInt;
+    hashedSeed: bigint;
     maxPlayers: number;
     viewDistance: number;
     reducedDebugInfo: boolean;

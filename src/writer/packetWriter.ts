@@ -20,7 +20,7 @@ export default class PacketWriter extends ByteWriter {
     this.writeVarInt(packetId);
   }
 
-  public writeBoolean(value: boolean): PacketWriter {
+  public writeBoolean(value: boolean): this {
     this.push(Buffer.from([value ? 0x01 : 0x00]));
     return this;
   }
@@ -41,14 +41,14 @@ export default class PacketWriter extends ByteWriter {
     return Buffer.from(bytes);
   }
 
-  public writeVarInt(value: number): PacketWriter {
+  public writeVarInt(value: number): this {
     const buffer = this.computeVarInt(value);
     this.push(buffer);
 
     return this;
   }
 
-  public writeByte(value: number): PacketWriter {
+  public writeByte(value: number): this {
     const buffer = Buffer.allocUnsafe(1);
     buffer.writeInt8(value);
     this.push(buffer);
@@ -56,12 +56,12 @@ export default class PacketWriter extends ByteWriter {
     return this;
   }
 
-  public writeUnsignedByte(value: number): PacketWriter {
+  public writeUnsignedByte(value: number): this {
     this.push(Buffer.from([value]));
     return this;
   }
 
-  public writeShort(value: number): PacketWriter {
+  public writeShort(value: number): this {
     const buffer = Buffer.allocUnsafe(2);
     buffer.writeInt16BE(value);
     this.push(buffer);
@@ -69,7 +69,7 @@ export default class PacketWriter extends ByteWriter {
     return this;
   }
 
-  public writeUnsignedShort(value: number): PacketWriter {
+  public writeUnsignedShort(value: number): this {
     const buffer = Buffer.allocUnsafe(2);
     buffer.writeUInt16BE(value);
     this.push(buffer);
@@ -77,7 +77,7 @@ export default class PacketWriter extends ByteWriter {
     return this;
   }
 
-  public writeInt(value: number): PacketWriter {
+  public writeInt(value: number): this {
     const buffer = Buffer.allocUnsafe(4);
     buffer.writeInt32BE(value);
     this.push(buffer);
@@ -85,7 +85,7 @@ export default class PacketWriter extends ByteWriter {
     return this;
   }
 
-  public writeLong(value: bigint): PacketWriter {
+  public writeLong(value: bigint): this {
     const buffer = Buffer.allocUnsafe(8);
     buffer.writeBigInt64BE(value);
     this.push(buffer);
@@ -93,7 +93,7 @@ export default class PacketWriter extends ByteWriter {
     return this;
   }
 
-  public writeFloat(value: number): PacketWriter {
+  public writeFloat(value: number): this {
     const buffer = Buffer.allocUnsafe(4);
     buffer.writeFloatBE(value);
     this.push(buffer);
@@ -101,7 +101,7 @@ export default class PacketWriter extends ByteWriter {
     return this;
   }
 
-  public writeDouble(value: number): PacketWriter {
+  public writeDouble(value: number): this {
     const buffer = Buffer.allocUnsafe(8);
     buffer.writeDoubleBE(value);
     this.push(buffer);
@@ -109,7 +109,7 @@ export default class PacketWriter extends ByteWriter {
     return this;
   }
 
-  public writeString(value: string): PacketWriter {
+  public writeString(value: string): this {
     const buffer = Buffer.from(value, "utf-8");
 
     this.writeVarInt(buffer.length);
@@ -119,18 +119,18 @@ export default class PacketWriter extends ByteWriter {
   }
 
   // TODO improve
-  public writeChat(chat: string): PacketWriter {
+  public writeChat(chat: string): this {
     return this.writeString(chat);
   }
 
   // TODO improve this function
-  public writeUuid(uuid: Buffer): PacketWriter {
+  public writeUuid(uuid: Buffer): this {
     this.push(uuid);
 
     return this;
   }
 
-  public writeIdentifierArray(arr: string[]): PacketWriter {
+  public writeIdentifierArray(arr: string[]): this {
     this.writeVarInt(arr.length);
 
     arr.forEach((value) => this.writeString(value));
@@ -138,14 +138,14 @@ export default class PacketWriter extends ByteWriter {
     return this;
   }
 
-  public writeByteArrayWithLength(buffer: Buffer): PacketWriter {
+  public writeByteArrayWithLength(buffer: Buffer): this {
     this.writeVarInt(buffer.length);
     this.push(buffer);
 
     return this;
   }
 
-  public writeByteArray(buffer: Buffer): PacketWriter {
+  public writeByteArray(buffer: Buffer): this {
     this.push(buffer);
 
     return this;
