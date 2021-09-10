@@ -1,10 +1,10 @@
 import NbtPacketWriter from "./nbtWriter";
 import { NbtTag, NbtType } from "../nbt";
-import { PacketKind } from "../packets/types";
+import { PacketKind } from "../packet/types";
 import helloWorldNbt from "../reader/__fixtures__/helloWorld.json";
 import bigTestNbt from "../reader/__fixtures__/bigTest.json";
 import bigTestTag from "./__fixtures__/bigTest";
-import Registry, { RegistryEntry } from "../packets/registry";
+import Registry, { RegistryEntry } from "../packet/registry";
 
 describe("NbtPacketWriter integration tests", () => {
   beforeEach(() => {
