@@ -13,5 +13,5 @@ Registry.register({
     host: DataKind.String,
     port: DataKind.UnsignedShort,
     nextState: DataKind.VarInt,
-  }
+  },
 });

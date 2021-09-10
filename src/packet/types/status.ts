@@ -3,7 +3,7 @@ import { PacketBase } from ".";
 
 export interface RequestPacket extends PacketBase {
   kind: PacketKind.Request;
-  payload: {};
+  payload: Record<string, never>;
 }
 
 export interface ResponsePacket extends PacketBase {

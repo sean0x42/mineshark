@@ -1,8 +1,7 @@
 import { Socket } from "net";
 
 import { numericToState, State } from "./state";
-import { writePacket } from "./packet/writePacket";
-import { readPacket } from "./packet/readPacket";
+import { readPacket, writePacket } from "./packet";
 import { Packet, PacketKind, PacketSource } from "./packet/types";
 import { log } from "./logger";
 import initialiseMiddleware from "./middleware";

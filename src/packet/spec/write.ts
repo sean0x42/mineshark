@@ -49,7 +49,7 @@ export function writeFromSpec(
     }
 
     // Deliberately opting out of type information here. We have to rely on the packet specs being correct.
-    const value: unknown = (packet as unknown as Record<string, unknown>)[name];
+    const value = (packet.payload as Record<string, unknown>)[name];
     const spec = isComplexProperty(property) ? property : { kind: property };
 
     if (spec.optional && value === null) {

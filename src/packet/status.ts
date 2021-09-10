@@ -2,7 +2,7 @@ import { State } from "../state";
 import Registry from "./registry";
 import { DataKind } from "./spec/types";
 import { PacketKind, PacketSource } from "./types";
-import { PingPacket, PongPacket, ResponsePacket } from "./types/status";
+import { ResponsePacket } from "./types/status";
 
 Registry.register({
   id: 0,
