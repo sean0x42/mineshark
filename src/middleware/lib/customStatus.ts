@@ -11,7 +11,7 @@ export default function customStatus(packet: Packet, next: NextFn): void {
 
   const nextPacket = produce(packet, (draft) => {
     log.trace("Editing server status message");
-    draft.payload.description.text = `[Mineshark] ${packet.payload.description.text}`;
+    draft.payload.meta.description.text = `[Mineshark] ${packet.payload.meta.description.text}`;
   });
 
   next(nextPacket);

@@ -3,25 +3,27 @@ import { PacketBase } from ".";
 
 export interface RequestPacket extends PacketBase {
   kind: PacketKind.Request;
-  payload: null;
+  payload: {};
 }
 
 export interface ResponsePacket extends PacketBase {
   kind: PacketKind.Response;
   payload: {
-    version: {
-      name: string;
-      protocol: number;
+    meta: {
+      version: {
+        name: string;
+        protocol: number;
+      };
+      players: {
+        max: number;
+        online: number;
+        sample: Array<{ name: string; id: string }>;
+      };
+      description: {
+        text: string;
+      };
+      favicon?: string;
     };
-    players: {
-      max: number;
-      online: number;
-      sample: Array<{ name: string; id: string }>;
-    };
-    description: {
-      text: string;
-    };
-    favicon?: string;
   };
 }
 

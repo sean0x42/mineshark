@@ -1,5 +1,6 @@
 import { State } from "../state";
 import Registry from "./registry";
+import { DataKind } from "./spec/types";
 import { PacketKind, PacketSource } from "./types";
 import { PingPacket, PongPacket, ResponsePacket } from "./types/status";
 
@@ -8,15 +9,7 @@ Registry.register({
   kind: PacketKind.Request,
   state: State.Status,
   source: PacketSource.Client,
-
-  read: () => ({
-    kind: PacketKind.Request,
-    payload: null,
-  }),
-
-  write: () => {
-    // do nothing
-  },
+  spec: {},
 });
 
 Registry.register({
@@ -24,17 +17,18 @@ Registry.register({
   kind: PacketKind.Response,
   state: State.Status,
   source: PacketSource.Server,
+  spec: {
+    meta: {
+      read: (reader) => {
+        const jsonBody = reader.readString();
+        return JSON.parse(jsonBody);
+      },
 
-  read: (reader) => ({
-    kind: PacketKind.Response,
-    payload: {
-      ...JSON.parse(reader.readString()),
+      write: (writer, packet) => {
+        const payload = JSON.stringify((packet as ResponsePacket).payload.meta);
+        writer.writeString(payload);
+      },
     },
-  }),
-
-  write: (writer, packet) => {
-    const payload = JSON.stringify((packet as ResponsePacket).payload);
-    writer.writeString(payload);
   },
 });
 
@@ -43,17 +37,8 @@ Registry.register({
   kind: PacketKind.Ping,
   state: State.Status,
   source: PacketSource.Client,
-
-  read: (reader) => ({
-    kind: PacketKind.Ping,
-    payload: {
-      timestamp: reader.readLong(),
-    },
-  }),
-
-  write: (writer, packet) => {
-    const { timestamp } = (packet as PingPacket).payload;
-    writer.writeLong(timestamp);
+  spec: {
+    timestamp: DataKind.Long,
   },
 });
 
@@ -62,16 +47,7 @@ Registry.register({
   kind: PacketKind.Pong,
   state: State.Status,
   source: PacketSource.Server,
-
-  read: (reader) => ({
-    kind: PacketKind.Pong,
-    payload: {
-      timestamp: reader.readLong(),
-    },
-  }),
-
-  write: (writer, packet) => {
-    const { timestamp } = (packet as PongPacket).payload;
-    writer.writeLong(timestamp);
+  spec: {
+    timestamp: DataKind.Long,
   },
 });

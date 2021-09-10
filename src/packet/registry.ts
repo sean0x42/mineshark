@@ -1,32 +1,24 @@
 import { State } from "../state";
-import PacketReader from "../reader";
-import { Packet, PacketKind, PacketSource } from "./types";
-import PacketWriter from "../writer";
-
-interface ReadImplementor {
-  (reader: PacketReader): Pick<Packet, "kind" | "payload">;
-}
-
-interface WriteImplementor {
-  (writer: PacketWriter, packet: Packet): void;
-}
+import PacketSpecification from "./spec";
+import { PacketKind, PacketSource } from "./types";
 
 export interface RegistryEntry {
   kind: PacketKind;
   source: PacketSource;
   id: number;
   state: State;
-  read: ReadImplementor;
-  write: WriteImplementor;
+  spec: PacketSpecification;
 }
 
-class PacketRegistry {
-  private packetsByKind: Partial<Record<PacketKind, RegistryEntry>> = {};
+type PacketsByKind = Partial<Record<PacketKind, RegistryEntry>>;
+type PacketIndex = Record<
+  State,
+  Record<PacketSource, Record<number, PacketKind>>
+>;
 
-  private packetIndex: Record<
-    State,
-    Record<PacketSource, Record<number, PacketKind>>
-  > = {
+class PacketRegistry {
+  private packetsByKind: PacketsByKind = {};
+  private packetIndex: PacketIndex = {
     [State.Handshake]: {
       [PacketSource.Client]: {},
       [PacketSource.Server]: {},
