@@ -1,19 +1,33 @@
 import { Socket } from "net";
 
+import initialiseMiddleware from "./middleware";
 import { numericToState, State } from "./state";
 import { readPacket, writePacket } from "./packet";
 import { Packet, PacketKind, PacketSource } from "./packet/types";
 import { log } from "./logger";
-import initialiseMiddleware from "./middleware";
+import { Store } from "./store";
+import { registerPlayer } from "./store/players";
 
 export default function createProxyListener(
   serverHost: string,
-  serverPort: number
+  serverPort: number,
+  store: Store
 ) {
   return (clientSocket: Socket): void => {
     const middleware = initialiseMiddleware();
+
     const clientAddr = `${clientSocket.remoteAddress}:${clientSocket.remotePort}`;
+
     let playerName = "unknown";
+    function setPlayerName(name: string): void {
+      playerName = name;
+      store.dispatch(
+        registerPlayer({
+          name,
+          addr: clientAddr,
+        })
+      );
+    }
 
     let clientState = State.Handshake;
     let serverState = State.Status;
@@ -54,6 +68,7 @@ export default function createProxyListener(
       const packet = readPacket(
         clientState,
         PacketSource.Client,
+        clientAddr,
         buffer,
         useCompressedFormat
       );
@@ -70,7 +85,7 @@ export default function createProxyListener(
       }
 
       if (packet.kind === PacketKind.Login) {
-        playerName = packet.payload.username;
+        setPlayerName(packet.payload.username);
       }
 
       middleware.apply(packet);
@@ -80,6 +95,7 @@ export default function createProxyListener(
       const packet = readPacket(
         serverState,
         PacketSource.Server,
+        clientAddr,
         buffer,
         useCompressedFormat
       );
@@ -102,7 +118,7 @@ export default function createProxyListener(
       }
 
       if (packet.kind === PacketKind.LoginSuccess) {
-        playerName = packet.payload.username;
+        setPlayerName(packet.payload.username);
         log.trace(
           { playerName },
           "Logged in successfully. Transitioning to play state"
