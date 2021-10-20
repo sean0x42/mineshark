@@ -2,11 +2,13 @@ import { configureStore } from "@reduxjs/toolkit";
 
 import playersReducer from "./players";
 import permissionsReducer from "./permissions";
+import flagsReducer from "./flags";
 
 export const store = configureStore({
   reducer: {
     players: playersReducer,
     permissions: permissionsReducer,
+    flags: flagsReducer,
   },
   devTools: false,
 });
