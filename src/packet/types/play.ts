@@ -1,4 +1,5 @@
 import { PacketBase } from ".";
+import { Chat } from "../../chat/types";
 import { NbtTag } from "../../nbt";
 import { PacketKind } from "./kind";
 
@@ -23,6 +24,22 @@ export interface JoinGamePacket extends PacketBase {
   };
 }
 
-type AnyPlayPacket = JoinGamePacket;
+export interface SendChatMessagePacket extends PacketBase {
+  kind: PacketKind.SendChatMessage;
+  payload: {
+    message: string;
+  };
+}
+
+export interface ChatMessagePacket extends PacketBase {
+  kind: PacketKind.ChatMessage;
+  payload: {
+    chat: Chat;
+    position: number;
+    sender: string;
+  };
+}
+
+type AnyPlayPacket = JoinGamePacket | SendChatMessagePacket | ChatMessagePacket;
 
 export default AnyPlayPacket;

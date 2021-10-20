@@ -30,3 +30,19 @@ generate this hash, they produce different values.
 [mitm]: https://en.wikipedia.org/wiki/Man-in-the-middle_attack
 
 > todo create a diagram for this
+
+## Commands
+
+- `/mineshark help`
+- `/mineshark flags <player>`
+- `/mineshark set <flag> <player>`
+- `/mineshark unset <flag> <player>`
+- `/mineshark toggle <flag> <player>`
+- `/mineshark trigger <script> <player>`
+- `/mineshark permit <player>`
+- `/mineshark revoke <player>`
+- `/mineshark starve <player>`
+
+### Aliases
+
+`/mineshark` is also aliased to `/shark`, and `/ms`.

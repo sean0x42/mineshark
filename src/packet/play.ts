@@ -5,6 +5,28 @@ import { PacketKind, PacketSource } from "./types";
 import { JoinGamePacket } from "./types/play";
 
 Registry.register({
+  id: 0x03,
+  kind: PacketKind.SendChatMessage,
+  source: PacketSource.Client,
+  state: State.Play,
+  spec: {
+    message: DataKind.String,
+  },
+});
+
+Registry.register({
+  id: 0x0f,
+  kind: PacketKind.ChatMessage,
+  source: PacketSource.Server,
+  state: State.Play,
+  spec: {
+    chat: DataKind.Chat,
+    position: DataKind.Byte,
+    sender: DataKind.Uuid,
+  },
+});
+
+Registry.register({
   id: 0x26,
   kind: PacketKind.JoinGame,
   source: PacketSource.Server,
