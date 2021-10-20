@@ -13,6 +13,7 @@ export interface PacketBase {
   kind: PacketKind;
   id: number;
   source: PacketSource;
+  clientId: string;
   isCompressed: boolean;
   payload: unknown;
 }

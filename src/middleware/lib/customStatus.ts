@@ -2,9 +2,12 @@ import produce from "immer";
 
 import { log } from "../../logger";
 import { Packet, PacketKind } from "../../packet/types";
-import { NextFn } from "../types";
+import { MiddlewareActions } from "../types";
 
-export default function customStatus(packet: Packet, next: NextFn): void {
+export default function customStatus(
+  packet: Packet,
+  { next }: MiddlewareActions
+): void {
   if (packet.kind !== PacketKind.Response) {
     return next();
   }

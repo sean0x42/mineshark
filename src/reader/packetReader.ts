@@ -1,5 +1,6 @@
 import zlib from "zlib";
 
+import { Chat } from "../chat/types";
 import ByteReader from "./byteReader";
 
 class PacketReader extends ByteReader {
@@ -104,9 +105,9 @@ class PacketReader extends ByteReader {
     return value;
   }
 
-  // TODO improve
-  public readChat(): string {
-    return this.readString();
+  public readChat(): Chat {
+    const contents = this.readString();
+    return JSON.parse(contents);
   }
 
   // TODO improve this function

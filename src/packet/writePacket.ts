@@ -16,7 +16,6 @@ export function writePacket(
     return null;
   }
 
-  log.trace({ packet }, "writing packet");
   const specification = registryEntry.spec;
   writeFromSpec(specification, packetWriter, packet);
 

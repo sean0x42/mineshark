@@ -1,5 +1,6 @@
 import zlib from "zlib";
 
+import { Chat } from "../chat/types";
 import Registry from "../packet/registry";
 import { PacketKind } from "../packet/types";
 import ByteWriter from "./byteWriter";
@@ -118,9 +119,9 @@ export default class PacketWriter extends ByteWriter {
     return this;
   }
 
-  // TODO improve
-  public writeChat(chat: string): this {
-    return this.writeString(chat);
+  public writeChat(chat: Chat): this {
+    const asString = JSON.stringify(chat);
+    return this.writeString(asString);
   }
 
   // TODO improve this function

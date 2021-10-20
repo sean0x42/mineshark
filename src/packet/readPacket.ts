@@ -8,6 +8,7 @@ import { readFromSpec } from "./spec/read";
 export function readPacket(
   state: State,
   source: PacketSource,
+  clientId: string,
   buffer: Buffer,
   useCompressedFormat: boolean
 ): Packet | null {
@@ -40,6 +41,7 @@ export function readPacket(
     id: packetReader.id,
     isCompressed: packetReader.isCompressed,
     source,
+    clientId,
     payload: readFromSpec(specification, packetReader),
   };
 
