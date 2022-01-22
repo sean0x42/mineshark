@@ -43,6 +43,7 @@ func (prox *Proxy) Start() {
 	go prox.pipe(prox.lconn, prox.rconn)
 	go prox.pipe(prox.rconn, prox.lconn)
 
+	<-prox.errSig
 	log.Printf("Closed (%d bytes sent, %d bytes received)\n", prox.sentBytes, prox.receivedBytes)
 }
 
