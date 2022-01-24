@@ -3,7 +3,7 @@ import styled from "styled-components";
 
 import Header from "../navigation/Header";
 import Sidebar from "../navigation/Sidebar";
-import { colorGrey700 } from "../../themes/selectors";
+import { colorGrey800 } from "../../themes/selectors";
 
 const PageContainer = styled.div`
   display: grid;
@@ -16,7 +16,7 @@ const PageContainer = styled.div`
   left: 0;
   right: 0;
 
-  background: ${colorGrey700};
+  background: ${colorGrey800};
 `;
 
 const Layout: React.FunctionComponent = (props) => (

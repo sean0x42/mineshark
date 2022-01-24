@@ -1,17 +1,19 @@
 import Link from "next/link";
 import React from "react";
 import styled from "styled-components";
-import { colorGrey800 } from "../../themes/selectors";
+import { colorGrey700, colorGrey900 } from "../../themes/selectors";
 
 const SidebarContainer = styled.nav`
   display: flex;
   flex-direction: column;
-  background: ${colorGrey800};
+  background: ${colorGrey900};
+  border-right: 1px solid ${colorGrey700};
+  padding: 0.5rem 0;
 `;
 
 const SidebarLink = styled.a`
   display: flex;
-  padding: 0.5rem;
+  padding: 0.5rem 1rem;
 `;
 
 const Sidebar: React.FunctionComponent = () => (

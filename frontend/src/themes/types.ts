@@ -1,3 +1,12 @@
+interface CommonSchema {
+  borderRadiusSmall: string;
+  borderRadiusStandard: string;
+}
+
+interface FontSchema {
+  family: string;
+}
+
 interface ColorsSchema {
   black: string;
   grey900: string;
@@ -11,8 +20,13 @@ interface ColorsSchema {
   grey100: string;
   grey50: string;
   white: string;
+  emerald600: string;
+  emerald500: string;
+  emerald400: string;
 }
 
 export interface ThemeSchema {
+  common: CommonSchema;
+  font: FontSchema;
   colors: ColorsSchema;
 }
