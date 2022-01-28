@@ -5,4 +5,4 @@ services:
     environment:
       - EULA=TRUE
       - ONLINE_MODE=FALSE
-    image: "itzg/minecraft-server"
+    image: "itzg/minecraft-server:java17"
