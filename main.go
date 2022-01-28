@@ -45,6 +45,8 @@ func main() {
 		log.Fatalf("Failed to listen on port: %s\n", err)
 	}
 
+	controller := proxy.NewController()
+
 	for {
 		conn, err := listener.AcceptTCP()
 		if err != nil {
