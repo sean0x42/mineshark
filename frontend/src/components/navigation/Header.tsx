@@ -1,6 +1,6 @@
 import React from "react";
 import styled from "styled-components";
-import { colorGrey700, colorGrey900 } from "../../themes/selectors";
+import { colorGrey700, colorGrey800 } from "../../themes/selectors";
 import Tag from "../Tag";
 
 const Container = styled.header`
@@ -8,7 +8,7 @@ const Container = styled.header`
   align-items: center;
   padding: 1rem;
 
-  background: ${colorGrey900};
+  background: ${colorGrey800};
   border-bottom: 1px solid ${colorGrey700};
   grid-column: 1 / 3;
 `;

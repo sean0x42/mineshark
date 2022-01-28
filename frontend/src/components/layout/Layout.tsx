@@ -3,7 +3,7 @@ import styled from "styled-components";
 
 import Header from "../navigation/Header";
 import Sidebar from "../navigation/Sidebar";
-import { colorGrey800 } from "../../themes/selectors";
+import { colorGrey900 } from "../../themes/selectors";
 
 const PageContainer = styled.div`
   display: grid;
@@ -16,8 +16,12 @@ const PageContainer = styled.div`
   left: 0;
   right: 0;
 
-  background: ${colorGrey800};
+  background: ${colorGrey900};
 `;
+
+const Main = styled.main`
+  padding: 2rem;
+`
 
 const Layout: React.FunctionComponent = (props) => (
   <PageContainer>
@@ -25,7 +29,7 @@ const Layout: React.FunctionComponent = (props) => (
 
     <Sidebar />
 
-    <main>{props.children}</main>
+    <Main>{props.children}</Main>
   </PageContainer>
 );
 

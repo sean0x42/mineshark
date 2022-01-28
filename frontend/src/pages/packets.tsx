@@ -64,11 +64,19 @@ const PacketSnifferPage: React.FunctionComponent = () => {
       )}
       {didSocketError && <p>Socket errored</p>}
 
-      <ol>
+      <table>
+        <tr>
+          <th>Sender</th>
+          <th>Recipient</th>
+          <th>Kind</th>
+          <th>Preview</th>
+          <th>Status</th>
+          <th>Time</th>
+        </tr>
         {packets.slice(0, 100).map((packet) => (
-          <li key={packet.id}></li>
+          <tr key={packet.id}></tr>
         ))}
-      </ol>
+      </table>
     </div>
   );
 };

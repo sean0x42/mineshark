@@ -1,12 +1,12 @@
 import Link from "next/link";
 import React from "react";
 import styled from "styled-components";
-import { colorGrey700, colorGrey900 } from "../../themes/selectors";
+import { colorGrey700, colorGrey800 } from "../../themes/selectors";
 
 const SidebarContainer = styled.nav`
   display: flex;
   flex-direction: column;
-  background: ${colorGrey900};
+  background: ${colorGrey800};
   border-right: 1px solid ${colorGrey700};
   padding: 0.5rem 0;
 `;
