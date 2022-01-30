@@ -1,25 +1,48 @@
 package proxy
 
 import (
-	"github.com/gorilla/websocket"
-	"github.com/sean0x42/mineshark/user"
+	"github.com/sean0x42/mineshark/api/websocket"
+	"github.com/sean0x42/mineshark/packet"
+	"github.com/sean0x42/mineshark/player"
 )
 
-type ProxyId string
-type UUID string
+type Controller struct {
+	proxies    map[uint64]*Proxy
+	register   chan *Proxy
+	unregister chan *Proxy
 
-type ProxyController struct {
-	proxies        map[ProxyId]Proxy
-	sockets        []websocket.Conn
-	users          []user.User
-	usersByUuid    map[string]*user.User
-	usersByProxyId map[ProxyId]*user.User
+	socketController *websocket.Controller
+
+	Players player.State
 }
 
-// TODO can we pass a callback to each proxy to run when a packet is encountered
+func NewController(socketController *websocket.Controller) *Controller {
+	controller := &Controller{
+		proxies:    make(map[uint64]*Proxy),
+		register:   make(chan *Proxy),
+		unregister: make(chan *Proxy),
 
-func NewController() ProxyController {
-	return ProxyController{
-		proxies: make(map[ProxyId]Proxy),
+		socketController: socketController,
 	}
+
+	go controller.run()
+
+	return controller
+}
+
+func (cont *Controller) run() {
+	for {
+		select {
+
+		case proxy := <-cont.register:
+			cont.proxies[proxy.id] = proxy
+
+		case proxy := <-cont.unregister:
+			delete(cont.proxies, proxy.id)
+		}
+	}
+}
+
+func (cont *Controller) Broadcast(packet packet.Packet) {
+	cont.socketController.Packets <- packet
 }

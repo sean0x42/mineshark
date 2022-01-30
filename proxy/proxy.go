@@ -4,51 +4,64 @@ import (
 	"io"
 	"log"
 	"net"
+
+	"github.com/sean0x42/mineshark/packet"
 )
 
 type Proxy struct {
-	sentBytes     uint64
-	receivedBytes uint64
-	laddr, raddr  *net.TCPAddr
-	lconn, rconn  io.ReadWriteCloser
-	didError      bool
-	errSig        chan bool
+	id         uint64
+	controller *Controller
+
+	proxyAddr  *net.TCPAddr
+	serverAddr *net.TCPAddr
+	clientConn io.ReadWriteCloser
+	serverConn io.ReadWriteCloser
+	didError   bool
+	errSignal  chan bool
 }
 
-func New(lconn *net.TCPConn, laddr *net.TCPAddr, raddr *net.TCPAddr) *Proxy {
+func New(id uint64, controller *Controller, clientConn *net.TCPConn, proxyAddr, serverAddr *net.TCPAddr) *Proxy {
 	return &Proxy{
-		lconn:    lconn,
-		laddr:    laddr,
-		raddr:    raddr,
-		didError: false,
-		errSig:   make(chan bool),
+		id:         id,
+		controller: controller,
+		clientConn: clientConn,
+		proxyAddr:  proxyAddr,
+		serverAddr: serverAddr,
+		didError:   false,
+		errSignal:  make(chan bool),
 	}
 }
 
-func (prox *Proxy) Start() {
-	defer prox.lconn.Close()
+func (proxy *Proxy) Start() {
+	defer func() {
+		proxy.clientConn.Close()
+		proxy.controller.unregister <- proxy
+		log.Println("Closed")
+	}()
+
+	proxy.controller.register <- proxy
 
 	var err error
-	prox.rconn, err = net.DialTCP("tcp", nil, prox.raddr)
+	proxy.serverConn, err = net.DialTCP("tcp", nil, proxy.serverAddr)
 
 	if err != nil {
 		log.Printf("Remote connection failed: %s\n", err)
 		return
 	}
 
-	defer prox.rconn.Close()
+	defer proxy.serverConn.Close()
 
-	log.Printf("Opened proxy from %s to %s\n", prox.laddr.String(), prox.raddr.String())
+	go proxy.pipe(proxy.clientConn, proxy.serverConn)
+	go proxy.pipe(proxy.serverConn, proxy.clientConn)
 
-	go prox.pipe(prox.lconn, prox.rconn)
-	go prox.pipe(prox.rconn, prox.lconn)
+	log.Printf("Opened proxy from %s to %s\n", proxy.proxyAddr.String(), proxy.serverAddr.String())
 
-	<-prox.errSig
-	log.Printf("Closed (%d bytes sent, %d bytes received)\n", prox.sentBytes, prox.receivedBytes)
+	// Wait for signal to fire
+	<-proxy.errSignal
 }
 
-func (prox *Proxy) err(s string, err error) {
-	if prox.didError {
+func (proxy *Proxy) err(s string, err error) {
+	if proxy.didError {
 		return
 	}
 
@@ -56,36 +69,23 @@ func (prox *Proxy) err(s string, err error) {
 		log.Printf(s, err)
 	}
 
-	prox.errSig <- true
-	prox.didError = true
+	proxy.errSignal <- true
+	proxy.didError = true
 }
 
-func (prox *Proxy) pipe(source io.ReadWriter, destination io.ReadWriter) {
-	islocal := source == prox.lconn
-
-	// 64k buffer
-	buff := make([]byte, 0xffff)
-
+func (proxy *Proxy) pipe(source, destination io.ReadWriter) {
 	for {
-		len, err := source.Read(buff)
+		packet := packet.New(proxy.proxyAddr.String(), proxy.serverAddr.String())
+		err := packet.Read(source, 0)
+
 		if err != nil {
-			prox.err("Read failed: %s\n", err)
+			proxy.err("Read failed: %s\n", err)
 			return
 		}
 
-		bytes := buff[:len]
+		log.Printf("Packet id %v\n", packet.Id)
+		log.Printf("Packet data %#v\n", packet.Data)
 
-		// write out result
-		len, err = destination.Write(bytes)
-		if err != nil {
-			prox.err("Write failed: %s\n", err)
-			return
-		}
-
-		if islocal {
-			prox.sentBytes += uint64(len)
-		} else {
-			prox.receivedBytes += uint64(len)
-		}
+		proxy.controller.Broadcast(packet)
 	}
 }

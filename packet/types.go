@@ -3,6 +3,7 @@ package packet
 import (
 	"errors"
 	"io"
+	"log"
 )
 
 // See https://wiki.vg/Protocol#Data_types
@@ -21,6 +22,7 @@ func readVarInt(reader io.Reader) (VarInt, error) {
 	return value, err
 }
 
+// TODO write unit tests
 func readVarIntWithLength(reader io.Reader) (VarInt, int, error) {
 	var value int32 = 0
 	var current byte
@@ -34,10 +36,10 @@ func readVarIntWithLength(reader io.Reader) (VarInt, int, error) {
 
 		current, err = readByte(reader)
 		if err != nil {
-			return VarInt(value), length, err
+			log.Fatalf("Failed to read byte: %s", err)
 		}
 
-		value |= int32((current & 0b01111111) << length * 7)
+		value |= int32((current & 0b01111111) << (length * 7))
 		length += 1
 
 		if (current & 0b10000000) == 0 {

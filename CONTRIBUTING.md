@@ -16,9 +16,8 @@ The proxy is also comprised of a number of sub-components:
 1. A simple TCP packet proxy.
 2. A packet serializer (struct to bytes) and deserializer (bytes to struct).
 3. An NBT reader/writer. Converts NBT data to high level data structures.
-4. A rule engine, which interprets custom rules to modify packets as they pass through the proxy.
-5. A HTTP API, which enables the official React frontend (and potentially a custom one) to communicate with and configure the proxy.
-6. A websocket protocol, to allow a frontend to subscribe to packet activity.
+4. A HTTP API, which enables the official React frontend (and potentially a custom one) to communicate with and configure the proxy.
+5. A websocket protocol, to allow a frontend to subscribe to packet activity.
 
 ### How does the frontend work?
 

@@ -7,12 +7,13 @@ import (
 	"net"
 
 	"github.com/sean0x42/mineshark/api"
+	"github.com/sean0x42/mineshark/api/websocket"
 	"github.com/sean0x42/mineshark/proxy"
 )
 
-var (
-	connid = uint64(0)
+var connid = uint64(0)
 
+var (
 	localAddr  *string = flag.String("l", "localhost:25566", "listen address")
 	remoteAddr *string = flag.String("r", "localhost:25565", "server address")
 
@@ -23,29 +24,35 @@ func main() {
 	flag.Parse()
 
 	fmt.Println("Welcome to Mineshark!")
-	fmt.Printf("Proxying from %v to %v\n", *localAddr, *remoteAddr)
+	fmt.Printf("Proxying from %v to %v\n\n", *localAddr, *remoteAddr)
+
+	var socketController *websocket.Controller
 
 	if !*disableWeb {
-		fmt.Println("Web interface enabled!")
-		go api.StartApi()
+		fmt.Println("Enabling web interface...")
+		socketController = websocket.NewController()
+		go api.StartHttpApi(socketController)
 	}
 
-	laddr, err := net.ResolveTCPAddr("tcp", *localAddr)
+	fmt.Println("Establishing listen address...")
+	proxyAddr, err := net.ResolveTCPAddr("tcp", *localAddr)
 	if err != nil {
 		log.Fatalf("Failed to resolve listen address: %s\n", err)
 	}
 
-	raddr, err := net.ResolveTCPAddr("tcp", *remoteAddr)
+	fmt.Println("Resolving Minecraft server...")
+	serverAddr, err := net.ResolveTCPAddr("tcp", *remoteAddr)
 	if err != nil {
 		log.Fatalf("Failed to resolve server address: %s\n", err)
 	}
 
-	listener, err := net.ListenTCP("tcp", laddr)
+	fmt.Println("Listening for TCP connections...")
+	listener, err := net.ListenTCP("tcp", proxyAddr)
 	if err != nil {
 		log.Fatalf("Failed to listen on port: %s\n", err)
 	}
 
-	controller := proxy.NewController()
+	proxyController := proxy.NewController(socketController)
 
 	for {
 		conn, err := listener.AcceptTCP()
@@ -55,8 +62,9 @@ func main() {
 		}
 
 		connid++
+		fmt.Printf("Established new connection (%d) with %s\n", connid, conn.RemoteAddr().String())
 
-		prox := proxy.New(conn, laddr, raddr)
+		prox := proxy.New(connid, proxyController, conn, proxyAddr, serverAddr)
 		go prox.Start()
 	}
 }

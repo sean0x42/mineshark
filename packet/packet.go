@@ -4,11 +4,12 @@ import (
 	"compress/zlib"
 	"fmt"
 	"io"
+	"log"
 )
 
 type Packet struct {
-	id        VarInt
-	data      []byte
+	Id        VarInt
+	Data      []byte
 	recipient string
 	sender    string
 }
@@ -17,7 +18,8 @@ func New(recipient string, sender string) Packet {
 	return Packet{recipient: recipient, sender: sender}
 }
 
-func (packet *Packet) readFrom(reader io.Reader, threshold int) error {
+func (packet *Packet) Read(reader io.Reader, threshold int) error {
+	log.Println("Attempting to read packet...")
 	packetLength, err := readVarInt(reader)
 	if err != nil {
 		return err
@@ -52,10 +54,11 @@ func (packet *Packet) readPacketIdAndData(reader io.Reader, length int) error {
 		return err
 	}
 
-	packet.id = packetId
-	packet.data = make([]byte, length-packetIdLen)
-	_, err = io.ReadFull(reader, packet.data)
+	packet.Id = packetId
+	packet.Data = make([]byte, length-packetIdLen)
+	_, err = io.ReadFull(reader, packet.Data)
 	if err != nil {
+		log.Printf("Error reading data %s\n", err)
 		return err
 	}
 
