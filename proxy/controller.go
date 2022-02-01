@@ -43,6 +43,6 @@ func (cont *Controller) run() {
 	}
 }
 
-func (cont *Controller) Broadcast(packet packet.Packet) {
+func (cont *Controller) Broadcast(packet *packet.Packet) {
 	cont.socketController.Packets <- packet
 }

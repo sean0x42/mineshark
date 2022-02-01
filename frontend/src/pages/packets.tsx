@@ -36,6 +36,8 @@ const PacketSnifferPage: React.FunctionComponent = () => {
       console.log("Socket closed.");
     });
 
+    socket.addEventListener("message", console.debug);
+
     setWebsocket(socket);
   }
 

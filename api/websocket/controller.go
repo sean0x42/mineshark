@@ -1,7 +1,7 @@
 package websocket
 
 import (
-	"fmt"
+	"log"
 
 	"github.com/sean0x42/mineshark/packet"
 )
@@ -11,7 +11,7 @@ type Controller struct {
 	register   chan *WebSocket
 	unregister chan *WebSocket
 
-	Packets chan packet.Packet
+	Packets chan *packet.Packet
 }
 
 func NewController() *Controller {
@@ -20,7 +20,7 @@ func NewController() *Controller {
 		register:   make(chan *WebSocket),
 		unregister: make(chan *WebSocket),
 
-		Packets: make(chan packet.Packet),
+		Packets: make(chan *packet.Packet),
 	}
 
 	go controller.run()
@@ -33,21 +33,18 @@ func (cont *Controller) run() {
 		select {
 
 		case socket := <-cont.register:
+			log.Println("Registering socket")
 			cont.sockets[socket] = true
 
 		case socket := <-cont.unregister:
+			log.Println("Unregistering socket")
 			delete(cont.sockets, socket)
 			close(socket.packets)
 
 		case packet := <-cont.Packets:
-			fmt.Println("Attempting to broadcast packet")
 			for socket := range cont.sockets {
-				select {
-				case socket.packets <- packet:
-				default:
-					close(socket.packets)
-					delete(cont.sockets, socket)
-				}
+				log.Printf("Sending packet to socket %s", socket.conn.RemoteAddr().String())
+				socket.packets <- packet
 			}
 		}
 	}

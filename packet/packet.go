@@ -1,6 +1,7 @@
 package packet
 
 import (
+	"bytes"
 	"compress/zlib"
 	"fmt"
 	"io"
@@ -19,7 +20,6 @@ func New(recipient string, sender string) Packet {
 }
 
 func (packet *Packet) Read(reader io.Reader, threshold int) error {
-	log.Println("Attempting to read packet...")
 	packetLength, err := readVarInt(reader)
 	if err != nil {
 		return err
@@ -59,6 +59,33 @@ func (packet *Packet) readPacketIdAndData(reader io.Reader, length int) error {
 	_, err = io.ReadFull(reader, packet.Data)
 	if err != nil {
 		log.Printf("Error reading data %s\n", err)
+		return err
+	}
+
+	return nil
+}
+
+func (packet *Packet) Write(writer io.Writer, threshold int) error {
+	// Write ID to a buffer
+	var buffer bytes.Buffer
+	n, err := writeVarInt(&buffer, packet.Id)
+	if err != nil {
+		return err
+	}
+
+	// Write length
+	_, err = writeVarInt(writer, VarInt(n+len(packet.Data)))
+	if err != nil {
+		return err
+	}
+
+	_, err = buffer.WriteTo(writer)
+	if err != nil {
+		return err
+	}
+
+	_, err = writer.Write(packet.Data)
+	if err != nil {
 		return err
 	}
 

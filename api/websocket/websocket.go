@@ -8,14 +8,14 @@ import (
 type WebSocket struct {
 	controller *Controller
 	conn       ws.Conn
-	packets    chan packet.Packet
+	packets    chan *packet.Packet
 }
 
 func New(controller *Controller, conn ws.Conn) {
 	socket := &WebSocket{
 		controller: controller,
 		conn:       conn,
-		packets:    make(chan packet.Packet),
+		packets:    make(chan *packet.Packet),
 	}
 
 	socket.controller.register <- socket
@@ -54,8 +54,8 @@ func (socket *WebSocket) awaitPacketFromController() {
 			return
 		}
 
-		// TODO do we need to dereference this packet???
-		err := socket.conn.WriteJSON(packet)
+		// TODO don't encode data as a string
+		err := socket.conn.WriteJSON(*packet)
 
 		if err != nil {
 			return

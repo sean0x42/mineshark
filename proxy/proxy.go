@@ -16,19 +16,26 @@ type Proxy struct {
 	serverAddr *net.TCPAddr
 	clientConn io.ReadWriteCloser
 	serverConn io.ReadWriteCloser
-	didError   bool
-	errSignal  chan bool
+
+	didError  bool
+	errSignal chan bool
+
+	isCompressed bool
 }
 
 func New(id uint64, controller *Controller, clientConn *net.TCPConn, proxyAddr, serverAddr *net.TCPAddr) *Proxy {
 	return &Proxy{
 		id:         id,
 		controller: controller,
+
 		clientConn: clientConn,
 		proxyAddr:  proxyAddr,
 		serverAddr: serverAddr,
-		didError:   false,
-		errSignal:  make(chan bool),
+
+		didError:  false,
+		errSignal: make(chan bool),
+
+		isCompressed: false,
 	}
 }
 
@@ -75,17 +82,19 @@ func (proxy *Proxy) err(s string, err error) {
 
 func (proxy *Proxy) pipe(source, destination io.ReadWriter) {
 	for {
-		packet := packet.New(proxy.proxyAddr.String(), proxy.serverAddr.String())
-		err := packet.Read(source, 0)
+		pk := packet.New(proxy.proxyAddr.String(), proxy.serverAddr.String())
+		err := pk.Read(source, 0)
 
 		if err != nil {
 			proxy.err("Read failed: %s\n", err)
 			return
 		}
 
-		log.Printf("Packet id %v\n", packet.Id)
-		log.Printf("Packet data %#v\n", packet.Data)
+		if pk.Id == packet.SetCompression {
+			// TODO extract threshold
+		}
 
-		proxy.controller.Broadcast(packet)
+		proxy.controller.Broadcast(&pk)
+		pk.Write(destination, 0)
 	}
 }
