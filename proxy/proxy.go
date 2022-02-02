@@ -4,6 +4,7 @@ import (
 	"io"
 	"log"
 	"net"
+	"sync"
 
 	"github.com/sean0x42/mineshark/packet"
 )
@@ -17,10 +18,15 @@ type Proxy struct {
 	clientConn io.ReadWriteCloser
 	serverConn io.ReadWriteCloser
 
-	didError  bool
 	errSignal chan bool
 
-	isCompressed bool
+	threshold    int
+	setThreshold chan int
+
+	clientState    State
+	setClientState chan State
+	serverState    State
+	setServerState chan State
 }
 
 func New(id uint64, controller *Controller, clientConn *net.TCPConn, proxyAddr, serverAddr *net.TCPAddr) *Proxy {
@@ -32,10 +38,16 @@ func New(id uint64, controller *Controller, clientConn *net.TCPConn, proxyAddr, 
 		proxyAddr:  proxyAddr,
 		serverAddr: serverAddr,
 
-		didError:  false,
 		errSignal: make(chan bool),
 
-		isCompressed: false,
+		threshold:    -1,
+		setThreshold: make(chan int),
+
+		// TODO can we combine these two states into one?
+		clientState:    Handshaking,
+		setClientState: make(chan State),
+		serverState:    Handshaking,
+		setServerState: make(chan State),
 	}
 }
 
@@ -58,43 +70,86 @@ func (proxy *Proxy) Start() {
 
 	defer proxy.serverConn.Close()
 
-	go proxy.pipe(proxy.clientConn, proxy.serverConn)
-	go proxy.pipe(proxy.serverConn, proxy.clientConn)
+	go proxy.pipeToServer(proxy.clientConn, proxy.serverConn)
+	go proxy.pipeToClient(proxy.serverConn, proxy.clientConn)
 
 	log.Printf("Opened proxy from %s to %s\n", proxy.proxyAddr.String(), proxy.serverAddr.String())
 
-	// Wait for signal to fire
-	<-proxy.errSignal
+	for {
+		select {
+		case <-proxy.errSignal:
+			return
+		}
+	}
 }
 
 func (proxy *Proxy) err(s string, err error) {
-	if proxy.didError {
-		return
-	}
-
 	if err != io.EOF {
 		log.Printf(s, err)
 	}
 
 	proxy.errSignal <- true
-	proxy.didError = true
 }
 
-func (proxy *Proxy) pipe(source, destination io.ReadWriter) {
+func (proxy *Proxy) pipeToServer(client, server io.ReadWriter) {
 	for {
-		pk := packet.New(proxy.proxyAddr.String(), proxy.serverAddr.String())
-		err := pk.Read(source, 0)
+		// TODO why are these values dissapearing?
+		// TODO can we get client addr instead of proxy addr
+		pk := packet.New(proxy.serverAddr.String(), proxy.proxyAddr.String())
+		err := pk.ReadFrom(client, proxy.threshold)
 
 		if err != nil {
 			proxy.err("Read failed: %s\n", err)
 			return
 		}
 
-		if pk.Id == packet.SetCompression {
-			// TODO extract threshold
+		proxy.controller.Broadcast(&pk)
+		pk.WriteTo(server, proxy.threshold)
+	}
+}
+
+// TODO change to receive from server. Use channels to output to client
+func (proxy *Proxy) pipeToClient(server, client io.ReadWriter) {
+	for {
+		pk := packet.New(proxy.proxyAddr.String(), proxy.serverAddr.String())
+		err := pk.ReadFrom(client, proxy.threshold)
+
+		if err != nil {
+			proxy.err("Read failed: %s\n", err)
+			return
+		}
+
+		if proxy.serverState == Handshaking && pk.Id == packet.Handshake {
+			var (
+				protocolVersion packet.VarInt
+				address         packet.String
+				port            packet.UnsignedShort
+				nextState       packet.VarInt
+			)
+
+			// Scan packet to pull out next state
+			// Update states
+			err = pk.ExtractData(&protocolVersion, &address, &port, &nextState)
+			if err != nil {
+				proxy.err("Failed to scan handshake packet: %s\n", err)
+			}
+
+			proxy.setClientState <- State(nextState)
+			proxy.setServerState <- State(nextState)
+		}
+
+		if proxy.serverState == Login && pk.Id == packet.LoginSetCompression {
+			var threshold packet.VarInt
+			err = pk.ExtractData(&threshold)
+
+			if err != nil {
+				proxy.err("Failed to scan set compression packet: %s\n", err)
+			}
+
+			proxy.setThreshold <- int(threshold)
 		}
 
 		proxy.controller.Broadcast(&pk)
-		pk.Write(destination, 0)
+		pk.WriteTo(server, proxy.threshold)
 	}
 }

@@ -1,5 +1,20 @@
 package packet
 
+// See https://wiki.vg/Protocol#Handshaking
+const Handshake = iota
+
+// See https://wiki.vg/Protocol#Clientbound_2
+const (
+	StatusResponse = iota
+	StatusPongResponse
+)
+
+// See https://wiki.vg/Protocol#Serverbound_2
+const (
+	StatusRequest = iota
+	StatusPingRequest
+)
+
 const (
 	LoginDisconnect = iota
 	LoginEncryptionRequest
@@ -12,14 +27,4 @@ const (
 	LoginStart = iota
 	LoginEncryptionResponse
 	LoginPluginResponse
-)
-
-const (
-	StatusResponse = iota
-	StatusPongResponse
-)
-
-const (
-	StatusRequest = iota
-	StatusPingRequest
 )

@@ -1,8 +1,6 @@
 package websocket
 
 import (
-	"log"
-
 	"github.com/sean0x42/mineshark/packet"
 )
 
@@ -33,17 +31,14 @@ func (cont *Controller) run() {
 		select {
 
 		case socket := <-cont.register:
-			log.Println("Registering socket")
 			cont.sockets[socket] = true
 
 		case socket := <-cont.unregister:
-			log.Println("Unregistering socket")
 			delete(cont.sockets, socket)
 			close(socket.packets)
 
 		case packet := <-cont.Packets:
 			for socket := range cont.sockets {
-				log.Printf("Sending packet to socket %s", socket.conn.RemoteAddr().String())
 				socket.packets <- packet
 			}
 		}
