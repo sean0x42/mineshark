@@ -7,20 +7,22 @@ import (
 	"bytes"
 	"compress/zlib"
 	"io"
+
+	"github.com/sean0x42/mineshark/packet/data"
 )
 
-func (pk *Packet) writeIdAndData(writer io.Writer) (int, error) {
-	n1, err := writeVarInt(writer, pk.Id)
+func (pk *Packet) writeIdAndData(writer io.Writer) (int64, error) {
+	n1, err := pk.Id.WriteTo(writer)
 	if err != nil {
 		return n1, err
 	}
 
 	n2, err := writer.Write(pk.Data)
 	if err != nil {
-		return n1 + n2, err
+		return n1 + int64(n2), err
 	}
 
-	return n1 + n2, nil
+	return n1 + int64(n2), nil
 }
 
 func (pk *Packet) WriteTo(writer io.Writer, threshold int) error {
@@ -41,7 +43,7 @@ func (pk *Packet) writeWithoutCompression(writer io.Writer) error {
 		return err
 	}
 
-	_, err = writeVarInt(writer, VarInt(buffer.Len()))
+	_, err = data.VarInt(buffer.Len()).WriteTo(writer)
 	if err != nil {
 		return err
 	}
@@ -63,7 +65,7 @@ func (pk *Packet) writeWithCompression(writer io.Writer, threshold int) error {
 	if len(pk.Data) < threshold {
 		// data length
 		// 0 = no compression
-		_, err = writeVarInt(&buffer, 0)
+		_, err = data.VarInt(0).WriteTo(&buffer)
 		if err != nil {
 			return err
 		}
@@ -74,7 +76,7 @@ func (pk *Packet) writeWithCompression(writer io.Writer, threshold int) error {
 		}
 
 		// packet length
-		_, err = writeVarInt(writer, VarInt(buffer.Len()))
+		_, err = data.VarInt(buffer.Len()).WriteTo(writer)
 		if err != nil {
 			return err
 		}
@@ -98,13 +100,13 @@ func (pk *Packet) writeWithCompression(writer io.Writer, threshold int) error {
 
 		// data length
 		var dataLength bytes.Buffer
-		n2, err := writeVarInt(&dataLength, VarInt(n))
+		n2, err := data.VarInt(n).WriteTo(&dataLength)
 		if err != nil {
 			return err
 		}
 
 		// packet length
-		_, err = writeVarInt(writer, VarInt(n2+buffer.Len()))
+		_, err = data.VarInt(n2 + int64(buffer.Len())).WriteTo(writer)
 		if err != nil {
 			return err
 		}

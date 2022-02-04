@@ -1,7 +1,9 @@
 package packet
 
+import "github.com/sean0x42/mineshark/packet/data"
+
 type Packet struct {
-	Id        VarInt
+	Id        data.VarInt
 	Data      []byte
 	recipient string
 	sender    string

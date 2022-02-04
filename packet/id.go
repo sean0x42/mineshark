@@ -1,30 +1,32 @@
 package packet
 
 // See https://wiki.vg/Protocol#Handshaking
-const Handshake = iota
+const Handshake = 0x0
 
-// See https://wiki.vg/Protocol#Clientbound_2
+// See https://wiki.vg/Protocol#Status
 const (
-	StatusResponse = iota
-	StatusPongResponse
+	StatusResponse     = 0x0
+	StatusPongResponse = 0x1
 )
 
-// See https://wiki.vg/Protocol#Serverbound_2
+// See https://wiki.vg/Protocol#Status
 const (
-	StatusRequest = iota
-	StatusPingRequest
+	StatusRequest     = 0x0
+	StatusPingRequest = 0x1
 )
 
+// See https://wiki.vg/Protocol#Login
 const (
-	LoginDisconnect = iota
-	LoginEncryptionRequest
-	LoginSuccess
-	SetCompression
-	LoginPluginRequest
+	LoginDisconnect        = 0x0
+	LoginEncryptionRequest = 0x1
+	LoginSuccess           = 0x2
+	SetCompression         = 0x3
+	LoginPluginRequest     = 0x4
 )
 
+// See https://wiki.vg/Protocol#Login
 const (
-	LoginStart = iota
-	LoginEncryptionResponse
-	LoginPluginResponse
+	LoginStart              = 0x0
+	LoginEncryptionResponse = 0x1
+	LoginPluginResponse     = 0x2
 )
