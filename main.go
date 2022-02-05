@@ -2,20 +2,19 @@ package main
 
 import (
 	"flag"
-	"fmt"
-	"log"
 	"net"
 
 	"github.com/sean0x42/mineshark/api"
 	"github.com/sean0x42/mineshark/api/websocket"
 	"github.com/sean0x42/mineshark/proxy"
+	log "github.com/sirupsen/logrus"
 )
 
 var connid = uint64(0)
 
 var (
-	localAddr  *string = flag.String("l", "localhost:25566", "listen address")
-	remoteAddr *string = flag.String("r", "localhost:25565", "server address")
+	listenAddr *string = flag.String("l", "localhost:25566", "listen address")
+	serverAddr *string = flag.String("r", "localhost:25565", "server address")
 
 	disableWeb *bool = flag.Bool("no-web", false, "do not start the web interface")
 )
@@ -23,30 +22,31 @@ var (
 func main() {
 	flag.Parse()
 
-	fmt.Println("Welcome to Mineshark!")
-	fmt.Printf("Proxying from %v to %v\n\n", *localAddr, *remoteAddr)
+	log.WithFields(log.Fields{
+		"listenAddr":          *listenAddr,
+		"serverAddr":          *serverAddr,
+		"webInterfaceEnabled": !*disableWeb,
+	}).Info("Welcome to Mineshark!")
 
 	var socketController *websocket.Controller
 
 	if !*disableWeb {
-		fmt.Println("Enabling web interface...")
+		log.Info("Enabling web interface...")
 		socketController = websocket.NewController()
 		go api.StartHttpApi(socketController)
 	}
 
-	fmt.Println("Establishing listen address...")
-	proxyAddr, err := net.ResolveTCPAddr("tcp", *localAddr)
+	proxyAddr, err := net.ResolveTCPAddr("tcp", *listenAddr)
 	if err != nil {
 		log.Fatalf("Failed to resolve listen address: %s\n", err)
 	}
 
-	fmt.Println("Resolving Minecraft server...")
-	serverAddr, err := net.ResolveTCPAddr("tcp", *remoteAddr)
+	serverAddr, err := net.ResolveTCPAddr("tcp", *serverAddr)
 	if err != nil {
 		log.Fatalf("Failed to resolve server address: %s\n", err)
 	}
 
-	fmt.Println("Listening for TCP connections...")
+	log.Info("Listening for TCP connections...")
 	listener, err := net.ListenTCP("tcp", proxyAddr)
 	if err != nil {
 		log.Fatalf("Failed to listen on port: %s\n", err)
@@ -62,7 +62,10 @@ func main() {
 		}
 
 		connid++
-		fmt.Printf("Established new connection (%d) with %s\n", connid, conn.RemoteAddr().String())
+		log.WithFields(log.Fields{
+			"id":             connid,
+			"connectionAddr": conn.RemoteAddr().String(),
+		}).Info("Established a new proxy connection!")
 
 		prox := proxy.New(connid, proxyController, conn, proxyAddr, serverAddr)
 		go prox.Start()

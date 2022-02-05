@@ -7,54 +7,45 @@ import (
 
 type VarInt int32
 
-func (varint *VarInt) ReadFrom(reader io.Reader) (int64, error) {
-	var value int32 = 0
-	var current byte
-	var err error
-	var length int64 = 0
+func (varint *VarInt) ReadFrom(reader io.Reader) (n int64, err error) {
+	var value uint32
 
-	for {
-		if length == 5 {
-			return length, errors.New("VarInt excees maximum length")
+	for sec := byte(0x80); sec&0x80 != 0; n++ {
+		if n > 5 {
+			return n, errors.New("VarInt is too big")
 		}
 
-		current, err = readByte(reader)
+		sec, err = readByte(reader)
 		if err != nil {
-			return length, err
+			return n, err
 		}
 
-		value |= int32((current & 0b01111111) << (length * 7))
-		length += 1
-
-		if (current & 0b10000000) == 0 {
-			break
-		}
+		value |= uint32(sec&0x7F) << uint32(7*n)
 	}
 
 	*varint = VarInt(value)
-	return length, nil
+	return n, err
 }
 
 func (varint VarInt) WriteTo(writer io.Writer) (int64, error) {
-	val := int32(varint)
-	var buffer = make([]byte, 0, 7)
+	var buffer = make([]byte, 0, 5)
+	num := uint32(varint)
 
 	for {
-		currentByte := val & 0b01111111
+		currentByte := num & 0x7F
+		num >>= 7
 
-		val >>= 7
-		if val != 0 {
-			currentByte |= 0b10000000
+		if num != 0 {
+			currentByte |= 0x80
 		}
 
 		buffer = append(buffer, byte(currentByte))
 
-		if val == 0 {
+		if num == 0 {
 			break
 		}
-
 	}
 
-	n, err := writer.Write(buffer)
-	return int64(n), err
+	nn, err := writer.Write(buffer)
+	return int64(nn), err
 }

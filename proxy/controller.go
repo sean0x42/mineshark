@@ -44,5 +44,7 @@ func (cont *Controller) run() {
 }
 
 func (cont *Controller) Broadcast(packet *packet.Packet) {
-	cont.socketController.Packets <- packet
+	if cont.socketController != nil {
+		cont.socketController.Packets <- packet
+	}
 }
