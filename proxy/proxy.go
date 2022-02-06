@@ -134,7 +134,7 @@ func (proxy *Proxy) pipe(source, destination io.ReadWriter) {
 		}
 
 		// Read packet in
-		err = packet.ReadFrom(source, proxy.threshold)
+		err = packet.ReadFrom(source, &proxy.threshold)
 		if err != nil {
 			proxy.err(isClientBound, "Read failed: %s\n", err)
 			return
@@ -147,10 +147,6 @@ func (proxy *Proxy) pipe(source, destination io.ReadWriter) {
 		} else {
 			proxy.onServerBoundPacket(&packet)
 		}
-
-		proxy.log.WithFields(log.Fields{
-			"clientBound": isClientBound,
-		}).Debugf("Sending packet %d/%d", packet.Id, proxy.clientState)
 	}
 }
 
@@ -191,7 +187,6 @@ func (proxy *Proxy) onClientBoundPacket(packet *pk.Packet) {
 	var err error
 
 	if proxy.serverState == Login && packet.Id == pk.SetCompression {
-		log.Debugf("Set compression packet body %v", packet.Data)
 		var threshold data.VarInt
 
 		err = packet.Extract(&threshold)

@@ -58,37 +58,37 @@ func (pk *Packet) writeWithoutCompression(writer io.Writer) error {
 
 // See https://wiki.vg/Protocol#With_compression
 func (pk *Packet) writeWithCompression(writer io.Writer, threshold int) error {
-	// Will contain: uncompressed len + id + data
-	var buffer bytes.Buffer
 	var err error
 
-	if len(pk.Data) < threshold {
+	var uncompressedPayload bytes.Buffer
+	_, err = pk.writeIdAndData(&uncompressedPayload)
+	if err != nil {
+		return err
+	}
+
+	if uncompressedPayload.Len() < threshold {
+		// packet length
+		_, err = data.VarInt(uncompressedPayload.Len() + 1).WriteTo(writer)
+		if err != nil {
+			return err
+		}
+
 		// data length
 		// 0 = no compression
-		_, err = data.VarInt(0).WriteTo(&buffer)
+		_, err = data.VarInt(0).WriteTo(writer)
 		if err != nil {
 			return err
 		}
 
-		_, err = pk.writeIdAndData(&buffer)
-		if err != nil {
-			return err
-		}
-
-		// packet length
-		_, err = data.VarInt(buffer.Len()).WriteTo(writer)
-		if err != nil {
-			return err
-		}
-
-		_, err = buffer.WriteTo(writer)
+		_, err = uncompressedPayload.WriteTo(writer)
 		if err != nil {
 			return err
 		}
 	} else {
-		zw := zlib.NewWriter(&buffer)
+		var compressedPayload bytes.Buffer
+		zw := zlib.NewWriter(&compressedPayload)
 
-		n, err := pk.writeIdAndData(zw)
+		_, err := pk.writeIdAndData(zw)
 		if err != nil {
 			return err
 		}
@@ -100,13 +100,14 @@ func (pk *Packet) writeWithCompression(writer io.Writer, threshold int) error {
 
 		// data length
 		var dataLength bytes.Buffer
-		n2, err := data.VarInt(n).WriteTo(&dataLength)
+		n, err := data.VarInt(uncompressedPayload.Len()).WriteTo(&dataLength)
 		if err != nil {
 			return err
 		}
 
 		// packet length
-		_, err = data.VarInt(n2 + int64(buffer.Len())).WriteTo(writer)
+		packetLength := n + int64(compressedPayload.Len())
+		_, err = data.VarInt(packetLength).WriteTo(writer)
 		if err != nil {
 			return err
 		}
@@ -116,7 +117,7 @@ func (pk *Packet) writeWithCompression(writer io.Writer, threshold int) error {
 			return err
 		}
 
-		_, err = buffer.WriteTo(writer)
+		_, err = compressedPayload.WriteTo(writer)
 		if err != nil {
 			return err
 		}
