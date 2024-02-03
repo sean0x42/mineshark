@@ -224,3 +224,8 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.toptal.com/developers/gitignore/api/go,emacs,vim,visualstudiocode,sublimetext,windows,macos,linux
+
+
+# Added by cargo
+
+/target
